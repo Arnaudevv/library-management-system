@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, Session
+from ...protocol.errors import ConflictError, DatabaseError, DatabaseUnavailableError
 
 
 class AbstractUnitOfWork(ABC):
@@ -32,6 +34,15 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __exit__(self, exc_type, exc_value, traceback):
         try:
             super().__exit__(exc_type, exc_value, traceback)
+        except IntegrityError as error:
+            raise ConflictError(
+                code="unique_constraint_violation",
+                message="The operation conflicts with existing data.",
+            ) from error
+        except OperationalError as error:
+            raise DatabaseUnavailableError() from error
+        except SQLAlchemyError as error:
+            raise DatabaseError() from error
         finally:
             self.session.close()  # always release the connection
 

@@ -6,6 +6,7 @@ from ..dto import BorrowerDTO
 from ..persistance.models.borrower import Borrower
 from ..persistance.repositories.borrower_repository import BorrowerRepository
 from ..persistance.repositories.unit_of_work import UnitOfWorkFactory
+from ..protocol.errors import ConflictError
 
 
 class BorrowerService:
@@ -38,7 +39,10 @@ class BorrowerService:
         with self.uow_factory.create() as uow:
             repository = BorrowerRepository(uow.session)
             if repository.get_by_email(borrower.email) is not None:
-                raise ValueError("A borrower with this email already exists")
+                raise ConflictError(
+                    code="borrower_already_exists",
+                    message="A borrower with this email already exists.",
+                )
             entity = Borrower(name=borrower.name, email=borrower.email)
             saved = repository.save(entity)
             uow.session.flush()

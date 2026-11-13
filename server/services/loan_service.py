@@ -9,6 +9,7 @@ from ..persistance.repositories.book_repository import BookRepository
 from ..persistance.repositories.borrower_repository import BorrowerRepository
 from ..persistance.repositories.loan_repository import LoanRepository
 from ..persistance.repositories.unit_of_work import UnitOfWorkFactory
+from ..protocol.errors import ConflictError, ResourceNotFoundError
 
 
 class LoanService:
@@ -54,15 +55,24 @@ class LoanService:
             book_repository = BookRepository(uow.session)
             borrower_repository = BorrowerRepository(uow.session)
             if book_repository.get_by_id(loan.book_id) is None:
-                raise ValueError("The book does not exist")
+                raise ResourceNotFoundError(
+                    code="book_not_found",
+                    message="The book does not exist.",
+                )
             if borrower_repository.get_by_id(loan.borrower_id) is None:
-                raise ValueError("The borrower does not exist")
+                raise ResourceNotFoundError(
+                    code="borrower_not_found",
+                    message="The borrower does not exist.",
+                )
             loan_repository = LoanRepository(uow.session)
             if any(
                 existing.return_date is None
                 for existing in loan_repository.get_by_book(loan.book_id)
             ):
-                raise ValueError("The book already has an active loan")
+                raise ConflictError(
+                    code="book_already_loaned",
+                    message="The book already has an active loan.",
+                )
             entity = Loan(
                 book_id=loan.book_id,
                 borrower_id=loan.borrower_id,

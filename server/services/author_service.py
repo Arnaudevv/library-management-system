@@ -6,6 +6,7 @@ from ..dto import AuthorDTO
 from ..persistance.models.author import Author
 from ..persistance.repositories.author_repository import AuthorRepository
 from ..persistance.repositories.unit_of_work import UnitOfWorkFactory
+from ..protocol.errors import ConflictError
 
 
 class AuthorService:
@@ -38,7 +39,10 @@ class AuthorService:
         with self.uow_factory.create() as uow:
             repository = AuthorRepository(uow.session)
             if repository.get_by_name(author.name) is not None:
-                raise ValueError("An author with this name already exists")
+                raise ConflictError(
+                    code="author_already_exists",
+                    message="An author with this name already exists.",
+                )
             entity = Author(name=author.name, nationality=author.nationality)
             saved = repository.save(entity)
             uow.session.flush()

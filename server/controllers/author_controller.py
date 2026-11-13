@@ -4,7 +4,8 @@ from typing import Any, Optional
 
 from ..dto import AuthorDTO
 from ..persistance.models.author import Author
-from ..service.author_service import AuthorService
+from ..protocol.errors import ResourceNotFoundError, ValidationError
+from ..services.author_service import AuthorService
 
 
 class AuthorController:
@@ -19,14 +20,20 @@ class AuthorController:
 
     def get_by_id(self, author_id: int) -> Optional[AuthorDTO]:
         self._validate_id(author_id)
-        return self._to_dto(self.service.get_by_id(author_id))
+        author = self.service.get_by_id(author_id)
+        if author is None:
+            raise ResourceNotFoundError(code="author_not_found", message="The author does not exist.")
+        return self._to_dto(author)
 
     def get_all(self) -> list[AuthorDTO]:
         return [self._to_dto(author) for author in self.service.get_all()]
 
     def get_by_name(self, name: str) -> Optional[AuthorDTO]:
         self._validate_text(name, "name")
-        return self._to_dto(self.service.get_by_name(name))
+        author = self.service.get_by_name(name)
+        if author is None:
+            raise ResourceNotFoundError(code="author_not_found", message="The author does not exist.")
+        return self._to_dto(author)
 
     def search_by_name(self, text: str) -> list[AuthorDTO]:
         self._validate_text(text, "text")
@@ -34,11 +41,16 @@ class AuthorController:
 
     def get_with_books(self, author_id: int) -> Optional[AuthorDTO]:
         self._validate_id(author_id)
-        return self._to_dto(self.service.get_with_books(author_id))
+        author = self.service.get_with_books(author_id)
+        if author is None:
+            raise ResourceNotFoundError(code="author_not_found", message="The author does not exist.")
+        return self._to_dto(author)
 
     def delete(self, author_id: int) -> bool:
         self._validate_id(author_id)
-        return self.service.delete(author_id)
+        if not self.service.delete(author_id):
+            raise ResourceNotFoundError(code="author_not_found", message="The author does not exist.")
+        return True
 
     def count(self) -> int:
         return self.service.count()
@@ -61,15 +73,17 @@ class AuthorController:
 
     @staticmethod
     def _require_body(body: Any) -> None:
+        if body is None:
+            raise ValidationError(code="missing_request_body", message="Request body is required.")
         if not isinstance(body, dict):
-            raise ValueError("Request body must be a JSON object")
+            raise ValidationError(code="invalid_request_body", message="Request body must be a JSON object.")
 
     @staticmethod
     def _validate_id(value: int) -> None:
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            raise ValueError("ID must be a positive integer")
+            raise ValidationError(code="invalid_id", message="ID must be a positive integer.")
 
     @staticmethod
     def _validate_text(value: Any, field: str) -> None:
         if not isinstance(value, str) or not value.strip():
-            raise ValueError(f"{field} must be a non-empty string")
+            raise ValidationError(code="invalid_field_value", message=f"{field} must be a non-empty string.")

@@ -7,6 +7,7 @@ from ..persistance.repositories.author_repository import AuthorRepository
 from ..persistance.models.book import Book
 from ..persistance.repositories.book_repository import BookRepository
 from ..persistance.repositories.unit_of_work import UnitOfWorkFactory
+from ..protocol.errors import ConflictError, ResourceNotFoundError
 
 
 class BookService:
@@ -51,10 +52,16 @@ class BookService:
         with self.uow_factory.create() as uow:
             author_repository = AuthorRepository(uow.session)
             if author_repository.get_by_id(book.author_id) is None:
-                raise ValueError("The author does not exist")
+                raise ResourceNotFoundError(
+                    code="author_not_found",
+                    message="The author does not exist.",
+                )
             repository = BookRepository(uow.session)
             if book.isbn is not None and repository.get_by_isbn(book.isbn) is not None:
-                raise ValueError("A book with this ISBN already exists")
+                raise ConflictError(
+                    code="isbn_already_exists",
+                    message="A book with this ISBN already exists.",
+                )
             entity = Book(
                 title=book.title,
                 isbn=book.isbn,

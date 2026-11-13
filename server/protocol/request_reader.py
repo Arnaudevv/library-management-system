@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
+from .errors import BodyTooLargeError, HeadersTooLargeError, ProtocolError
 """Parse and validate the supported HTTP request protocol.
 
 This module validates the request headers, request line, Content-Length,
@@ -14,10 +15,6 @@ body completeness, UTF-8 decoding, and JSON syntax when applicable.
 
 CHUNK_SIZE = 4096
 MAX_HEADER_SIZE = 16 * 1024
-
-
-class ProtocolError(ValueError):
-    """Raised when a request does not comply with the supported HTTP format."""
 
 
 @dataclass
@@ -44,13 +41,16 @@ def read_request(conn: socket.socket) -> Request:
     length = _parse_content_length(headers)
 
     if length > MAX_HEADER_SIZE * 64:
-        raise ProtocolError("Request body is too large")
+        raise BodyTooLargeError()
     body = _read_body(conn, body, length)
     parsed_body = _parse_body(body, headers)
 
     url = urlsplit(target)
     if not url.path:
-        raise ProtocolError("Request target must contain a path")
+        raise ProtocolError(
+            code="invalid_request_target",
+            message="The request target must contain a path.",
+        )
 
     return Request(
         method=method,
@@ -70,10 +70,10 @@ def _read_headers(conn: socket.socket) -> bytes:
     while b"\r\n\r\n" not in data:
         chunk = conn.recv(CHUNK_SIZE)
         if not chunk:
-            raise ProtocolError("Connection closed before headers were complete")
+            raise ProtocolError(code="incomplete_headers", message="The request headers are incomplete.")
         data += chunk
         if len(data) > MAX_HEADER_SIZE:
-            raise ProtocolError("Request headers are too large")
+            raise HeadersTooLargeError()
     return data
 
 
@@ -81,20 +81,20 @@ def _parse_head(head: str) -> tuple[str, dict[str, str]]:
     """Validate header syntax and return the request line and normalized headers."""
     lines = head.split("\r\n")
     if not lines or not lines[0]:
-        raise ProtocolError("Request line is missing")
+        raise ProtocolError(code="malformed_request_line", message="The request line is malformed.")
 
     headers: dict[str, str] = {}
     for line in lines[1:]:
         if not line or ":" not in line:
-            raise ProtocolError("Malformed header")
+            raise ProtocolError(code="malformed_header", message="The request contains a malformed header.")
         name, value = line.split(":", 1)
         name = name.strip()
         value = value.strip()
         if not name or any(character.isspace() for character in name):
-            raise ProtocolError("Malformed header name")
+            raise ProtocolError(code="malformed_header", message="The request contains an invalid header name.")
         normalized_name = name.lower()
         if normalized_name in headers:
-            raise ProtocolError(f"Duplicate header: {name}")
+            raise ProtocolError(code="duplicate_header", message="The request contains a duplicate header.")
         headers[normalized_name] = value
     return lines[0], headers
 
@@ -103,10 +103,15 @@ def _parse_request_line(request_line: str) -> tuple[str, str]:
     """Validate the HTTP method, request target, and protocol version."""
     parts = request_line.split()
     if len(parts) != 3:
-        raise ProtocolError("Malformed request line")
+        raise ProtocolError(code="malformed_request_line", message="The request line is malformed.")
     method, target, version = parts
     if not method.isupper() or not target or version != "HTTP/1.1":
-        raise ProtocolError("Malformed request line")
+        if version != "HTTP/1.1":
+            raise ProtocolError(
+                code="unsupported_http_version",
+                message="The HTTP version is not supported.",
+            )
+        raise ProtocolError(code="malformed_request_line", message="The request line is malformed.")
     return method, target
 
 
@@ -116,7 +121,10 @@ def _parse_content_length(headers: dict[str, str]) -> int:
     if value is None:
         return 0
     if not value or not value.isdecimal():
-        raise ProtocolError("Content-Length must be a non-negative integer")
+        raise ProtocolError(
+            code="invalid_content_length",
+            message="Content-Length must be a non-negative integer.",
+        )
     return int(value)
 
 
@@ -128,7 +136,7 @@ def _read_body(conn: socket.socket, body: bytes, length: int) -> bytes:
     while len(body) < length:
         chunk = conn.recv(min(CHUNK_SIZE, length - len(body)))
         if not chunk:
-            raise ProtocolError("Connection closed before body was complete")
+            raise ProtocolError(code="incomplete_body", message="The request body is incomplete.")
         body += chunk
     return body
 
@@ -142,11 +150,11 @@ def _parse_body(body: bytes, headers: dict[str, str]) -> Any | None:
     try:
         text = body.decode("utf-8")
     except UnicodeDecodeError as error:
-        raise ProtocolError("Request body is not valid UTF-8") from error
+        raise ProtocolError(code="invalid_body_encoding", message="The request body is not valid UTF-8.") from error
 
     if content_type == "application/json":
         try:
             return json.loads(text)
         except json.JSONDecodeError as error:
-            raise ProtocolError("Request body contains invalid JSON") from error
+            raise ProtocolError(code="invalid_json", message="The request body contains invalid JSON.") from error
     return text

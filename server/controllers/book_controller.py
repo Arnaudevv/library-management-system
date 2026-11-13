@@ -4,7 +4,8 @@ from typing import Any, Optional
 
 from ..dto import BookDTO
 from ..persistance.models.book import Book
-from ..service.book_service import BookService
+from ..protocol.errors import ResourceNotFoundError, ValidationError
+from ..services.book_service import BookService
 
 
 class BookController:
@@ -18,14 +19,20 @@ class BookController:
 
     def get_by_id(self, book_id: int) -> Optional[BookDTO]:
         self._validate_id(book_id)
-        return self._to_dto(self.service.get_by_id(book_id))
+        book = self.service.get_by_id(book_id)
+        if book is None:
+            raise ResourceNotFoundError(code="book_not_found", message="The book does not exist.")
+        return self._to_dto(book)
 
     def get_all(self) -> list[BookDTO]:
         return [self._to_dto(book) for book in self.service.get_all()]
 
     def get_by_isbn(self, isbn: str) -> Optional[BookDTO]:
         self._validate_text(isbn, "isbn")
-        return self._to_dto(self.service.get_by_isbn(isbn))
+        book = self.service.get_by_isbn(isbn)
+        if book is None:
+            raise ResourceNotFoundError(code="book_not_found", message="The book does not exist.")
+        return self._to_dto(book)
 
     def search_by_title(self, text: str) -> list[BookDTO]:
         self._validate_text(text, "text")
@@ -40,14 +47,19 @@ class BookController:
 
     def get_with_loans(self, book_id: int) -> Optional[BookDTO]:
         self._validate_id(book_id)
-        return self._to_dto(self.service.get_with_loans(book_id))
+        book = self.service.get_with_loans(book_id)
+        if book is None:
+            raise ResourceNotFoundError(code="book_not_found", message="The book does not exist.")
+        return self._to_dto(book)
 
     def get_available(self) -> list[BookDTO]:
         return [self._to_dto(book) for book in self.service.get_available()]
 
     def delete(self, book_id: int) -> bool:
         self._validate_id(book_id)
-        return self.service.delete(book_id)
+        if not self.service.delete(book_id):
+            raise ResourceNotFoundError(code="book_not_found", message="The book does not exist.")
+        return True
 
     def count(self) -> int:
         return self.service.count()
@@ -55,7 +67,9 @@ class BookController:
     @classmethod
     def _from_body(cls, body: dict[str, Any]) -> BookDTO:
         if not isinstance(body, dict):
-            raise ValueError("Request body must be a JSON object")
+            if body is None:
+                raise ValidationError(code="missing_request_body", message="Request body is required.")
+            raise ValidationError(code="invalid_request_body", message="Request body must be a JSON object.")
         title = body.get("title")
         author_id = body.get("author_id")
         isbn = body.get("isbn")
@@ -67,7 +81,7 @@ class BookController:
         if publication_year is not None and (
             not isinstance(publication_year, int) or isinstance(publication_year, bool)
         ):
-            raise ValueError("publication_year must be an integer")
+            raise ValidationError(code="invalid_field_type", message="publication_year must be an integer.")
         return BookDTO(
             title=title,
             author_id=author_id,
@@ -90,9 +104,9 @@ class BookController:
     @staticmethod
     def _validate_id(value: Any, field: str = "ID") -> None:
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            raise ValueError(f"{field} must be a positive integer")
+            raise ValidationError(code="invalid_id", message=f"{field} must be a positive integer.")
 
     @staticmethod
     def _validate_text(value: Any, field: str) -> None:
         if not isinstance(value, str) or not value.strip():
-            raise ValueError(f"{field} must be a non-empty string")
+            raise ValidationError(code="invalid_field_value", message=f"{field} must be a non-empty string.")

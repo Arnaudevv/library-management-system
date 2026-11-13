@@ -4,7 +4,8 @@ from typing import Any, Optional
 
 from ..dto import BorrowerDTO
 from ..persistance.models.borrower import Borrower
-from ..service.borrower_service import BorrowerService
+from ..protocol.errors import ResourceNotFoundError, ValidationError
+from ..services.borrower_service import BorrowerService
 
 
 class BorrowerController:
@@ -18,14 +19,20 @@ class BorrowerController:
 
     def get_by_id(self, borrower_id: int) -> Optional[BorrowerDTO]:
         self._validate_id(borrower_id)
-        return self._to_dto(self.service.get_by_id(borrower_id))
+        borrower = self.service.get_by_id(borrower_id)
+        if borrower is None:
+            raise ResourceNotFoundError(code="borrower_not_found", message="The borrower does not exist.")
+        return self._to_dto(borrower)
 
     def get_all(self) -> list[BorrowerDTO]:
         return [self._to_dto(borrower) for borrower in self.service.get_all()]
 
     def get_by_email(self, email: str) -> Optional[BorrowerDTO]:
         self._validate_text(email, "email")
-        return self._to_dto(self.service.get_by_email(email))
+        borrower = self.service.get_by_email(email)
+        if borrower is None:
+            raise ResourceNotFoundError(code="borrower_not_found", message="The borrower does not exist.")
+        return self._to_dto(borrower)
 
     def search_by_name(self, text: str) -> list[BorrowerDTO]:
         self._validate_text(text, "text")
@@ -37,7 +44,9 @@ class BorrowerController:
 
     def delete(self, borrower_id: int) -> bool:
         self._validate_id(borrower_id)
-        return self.service.delete(borrower_id)
+        if not self.service.delete(borrower_id):
+            raise ResourceNotFoundError(code="borrower_not_found", message="The borrower does not exist.")
+        return True
 
     def count(self) -> int:
         return self.service.count()
@@ -45,13 +54,15 @@ class BorrowerController:
     @classmethod
     def _from_body(cls, body: dict[str, Any]) -> BorrowerDTO:
         if not isinstance(body, dict):
-            raise ValueError("Request body must be a JSON object")
+            if body is None:
+                raise ValidationError(code="missing_request_body", message="Request body is required.")
+            raise ValidationError(code="invalid_request_body", message="Request body must be a JSON object.")
         name = body.get("name")
         email = body.get("email")
         cls._validate_text(name, "name")
         cls._validate_text(email, "email")
         if "@" not in email:
-            raise ValueError("email must be a valid email address")
+            raise ValidationError(code="invalid_email", message="email must be a valid email address.")
         return BorrowerDTO(name=name, email=email)
 
     @staticmethod
@@ -63,9 +74,9 @@ class BorrowerController:
     @staticmethod
     def _validate_id(value: Any) -> None:
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            raise ValueError("ID must be a positive integer")
+            raise ValidationError(code="invalid_id", message="ID must be a positive integer.")
 
     @staticmethod
     def _validate_text(value: Any, field: str) -> None:
         if not isinstance(value, str) or not value.strip():
-            raise ValueError(f"{field} must be a non-empty string")
+            raise ValidationError(code="invalid_field_value", message=f"{field} must be a non-empty string.")

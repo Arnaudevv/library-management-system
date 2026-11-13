@@ -5,7 +5,8 @@ from typing import Any, Optional
 
 from ..dto import LoanDTO
 from ..persistance.models.loan import Loan
-from ..service.loan_service import LoanService
+from ..protocol.errors import ResourceNotFoundError, ValidationError
+from ..services.loan_service import LoanService
 
 
 class LoanController:
@@ -19,7 +20,10 @@ class LoanController:
 
     def get_by_id(self, loan_id: int) -> Optional[LoanDTO]:
         self._validate_id(loan_id)
-        return self._to_dto(self.service.get_by_id(loan_id))
+        loan = self.service.get_by_id(loan_id)
+        if loan is None:
+            raise ResourceNotFoundError(code="loan_not_found", message="The loan does not exist.")
+        return self._to_dto(loan)
 
     def get_all(self) -> list[LoanDTO]:
         return [self._to_dto(loan) for loan in self.service.get_all()]
@@ -47,7 +51,9 @@ class LoanController:
 
     def delete(self, loan_id: int) -> bool:
         self._validate_id(loan_id)
-        return self.service.delete(loan_id)
+        if not self.service.delete(loan_id):
+            raise ResourceNotFoundError(code="loan_not_found", message="The loan does not exist.")
+        return True
 
     def count(self) -> int:
         return self.service.count()
@@ -55,7 +61,9 @@ class LoanController:
     @classmethod
     def _from_body(cls, body: dict[str, Any]) -> LoanDTO:
         if not isinstance(body, dict):
-            raise ValueError("Request body must be a JSON object")
+            if body is None:
+                raise ValidationError(code="missing_request_body", message="Request body is required.")
+            raise ValidationError(code="invalid_request_body", message="Request body must be a JSON object.")
         book_id = body.get("book_id")
         borrower_id = body.get("borrower_id")
         loan_date = cls._parse_date(body.get("loan_date"), "loan_date")
@@ -86,13 +94,13 @@ class LoanController:
         if value is None:
             return None
         if not isinstance(value, str):
-            raise ValueError(f"{field} must be an ISO date")
+            raise ValidationError(code="invalid_date", message=f"{field} must be an ISO date.")
         try:
             return dt.date.fromisoformat(value)
         except ValueError as error:
-            raise ValueError(f"{field} must be an ISO date") from error
+            raise ValidationError(code="invalid_date", message=f"{field} must be an ISO date.") from error
 
     @staticmethod
-    def _validate_id(value: Any, field: str) -> None:
+    def _validate_id(value: Any, field: str = "ID") -> None:
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            raise ValueError(f"{field} must be a positive integer")
+            raise ValidationError(code="invalid_id", message=f"{field} must be a positive integer.")

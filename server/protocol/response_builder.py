@@ -8,11 +8,20 @@ from typing import Any
 
 
 class StatusCode(IntEnum):
-    """Define the HTTP status codes currently used by the application."""
+    """Define the HTTP status codes used by the application."""
 
     OK = 200
     CREATED = 201
     NO_CONTENT = 204
+    BAD_REQUEST = 400
+    NOT_FOUND = 404
+    METHOD_NOT_ALLOWED = 405
+    CONFLICT = 409
+    CONTENT_TOO_LARGE = 413
+    UNSUPPORTED_MEDIA_TYPE = 415
+    UNPROCESSABLE_CONTENT = 422
+    INTERNAL_SERVER_ERROR = 500
+    SERVICE_UNAVAILABLE = 503
 
 
 @dataclass
@@ -90,4 +99,13 @@ def _reason_phrase(status: StatusCode) -> str:
         StatusCode.OK: "OK",
         StatusCode.CREATED: "Created",
         StatusCode.NO_CONTENT: "No Content",
+        StatusCode.BAD_REQUEST: "Bad Request",
+        StatusCode.NOT_FOUND: "Not Found",
+        StatusCode.METHOD_NOT_ALLOWED: "Method Not Allowed",
+        StatusCode.CONFLICT: "Conflict",
+        StatusCode.CONTENT_TOO_LARGE: "Content Too Large",
+        StatusCode.UNSUPPORTED_MEDIA_TYPE: "Unsupported Media Type",
+        StatusCode.UNPROCESSABLE_CONTENT: "Unprocessable Content",
+        StatusCode.INTERNAL_SERVER_ERROR: "Internal Server Error",
+        StatusCode.SERVICE_UNAVAILABLE: "Service Unavailable",
     }[status]

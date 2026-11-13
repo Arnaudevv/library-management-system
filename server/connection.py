@@ -4,6 +4,7 @@ from server.settings import HOST, PORT
 from server.protocol.request_reader import Request, read_request
 from server.protocol.response_builder import Response, StatusCode, build_response
 from server.router import Router
+from server.error_manager import ErrorManager
 
 LISTEN_BACKLOG = 5
 
@@ -22,8 +23,11 @@ def handle_connection(conn: socket.socket):
         request: Request = read_request(conn)
         response = Response(status=StatusCode.OK, body=router.handle(request))
         conn.sendall(build_response(response))
-    except Exception:
-        return
+    except Exception as error:
+        response = ErrorManager.handle(error)
+        conn.sendall(build_response(response))
+    
+
 
 
 def socket_listener():
@@ -41,3 +45,6 @@ def socket_listener():
                 continue
             with conn:
                 handle_connection(conn)
+                
+
+
