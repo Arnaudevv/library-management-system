@@ -159,8 +159,8 @@
 
 /* ------------------- BOOK ------------------- */
 .book-item {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px 140px 60px 40px;
     align-items: center;
     gap: 16px;
     padding: 12px 16px;
@@ -173,7 +173,7 @@
 }
 
 .book-title {
-    flex: 1;
+    /* flex: 1; */
     min-width: 0;
     font-size: 14px;
     font-weight: 500;
@@ -204,6 +204,26 @@
     color: var(--dark5);
 }
 
+.delete-book-btn {
+    padding: 5px;
+    background-color: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.delete-book-btn:hover {
+  background-color: #dc2626; /* Un poco más oscuro al pasar el ratón */
+}
+
+.delete-book-btn:active {
+  background-color: #b91c1c; /* Más oscuro al hacer clic */
+  transform: scale(0.96);    /* Efecto sutil de "hundirse" */
+}
 
 /* ------- CREATE BOOK SECTION --------*/
 .create-book-section {

@@ -51,7 +51,8 @@ class BookService:
     def save(self, book: BookDTO) -> Book:
         with self.uow_factory.create() as uow:
             author_repository = AuthorRepository(uow.session)
-            if author_repository.get_by_id(book.author_id) is None:
+            author = author_repository.get_by_id(book.author_id)
+            if author is None:
                 raise ResourceNotFoundError(
                     code="author_not_found",
                     message="The author does not exist.",
@@ -66,7 +67,7 @@ class BookService:
                 title=book.title,
                 isbn=book.isbn,
                 publication_year=book.publication_year,
-                author_id=book.author_id,
+                author=author,
             )
             saved = repository.save(entity)
             uow.session.flush()

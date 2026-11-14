@@ -97,6 +97,7 @@ class BookController:
             id=book.id,
             title=book.title,
             author_id=book.author_id,
+            author_name=book.author.name,
             isbn=book.isbn,
             publication_year=book.publication_year,
         )

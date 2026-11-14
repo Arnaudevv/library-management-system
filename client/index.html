@@ -34,6 +34,8 @@
     </header>
 
     <main class="main-content">
+        
+        <!---------- BOOKS VIEW ---------->
         <section class="books-view">
             <div class="books-query-section">
                 
@@ -49,7 +51,7 @@
                         <option value="book-title">Title</option>
                     </select>
                     <input type="text" id="search-input" placeholder="Search by parameter">
-                    <button id="search-btn">Search</button>
+                    <button id="search-book-by-paremeters-btn">Search</button>
                 </div>
 
                 <div class="filter-book-by-author-container">
@@ -65,6 +67,7 @@
                         <span class="book-author">Gabriel García Márquez</span>
                         <span class="book-isbn">978-0307474728</span>
                         <span class="book-year">1967</span>
+                        <button type="button" class="delete-book-btn" disabled>🗑️</button>
                     </item>
                 </content>
                 
@@ -107,13 +110,19 @@
         
 
 
-        
-        <section class="authors-view">authors</section>
+        <!---------- AUTHORS VIEW ---------->
+        <section class="authors-view">
+
+        </section>
+
+
+
         <section class="borrowers-view">borrowers</section>
         <section class="loans-view">loans</section>
     </main>
 
     <script src="js/index.js"></script>
+    <script type="module" src="js/views/books.js"></script>
 </body>
 
 </html>

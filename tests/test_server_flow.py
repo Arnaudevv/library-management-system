@@ -127,6 +127,7 @@ def test_book_queries(router: Router) -> None:
     author = create_author(router)
     book = create_book(router, author.id)
 
+    assert book.author_name == author.name
     assert router.handle(request("GET", "/books")) == [book]
     assert router.handle(request("GET", "/books?isbn=isbn-1")) == book
     assert router.handle(request("GET", "/books/search?text=pride")) == [book]

@@ -153,6 +153,7 @@ Un libro se devuelve así:
 {
   "title": "Pride and Prejudice",
   "author_id": 1,
+  "author_name": "Jane Austen",
   "isbn": "9780141439518",
   "publication_year": 1813,
   "id": 1
@@ -167,6 +168,7 @@ Devuelve el libro creado:
 {
   "title": "Pride and Prejudice",
   "author_id": 1,
+  "author_name": "Jane Austen",
   "isbn": "9780141439518",
   "publication_year": 1813,
   "id": 1
@@ -182,6 +184,7 @@ Devuelve una lista:
   {
     "title": "Pride and Prejudice",
     "author_id": 1,
+    "author_name": "Jane Austen",
     "isbn": "9780141439518",
     "publication_year": 1813,
     "id": 1
@@ -197,6 +200,7 @@ Devuelve un libro:
 {
   "title": "Pride and Prejudice",
   "author_id": 1,
+  "author_name": "Jane Austen",
   "isbn": "9780141439518",
   "publication_year": 1813,
   "id": 1
@@ -211,6 +215,7 @@ Devuelve un libro:
 {
   "title": "Pride and Prejudice",
   "author_id": 1,
+  "author_name": "Jane Austen",
   "isbn": "9780141439518",
   "publication_year": 1813,
   "id": 1
@@ -226,6 +231,7 @@ Devuelve una lista de libros cuyo `title` contiene el texto:
   {
     "title": "Pride and Prejudice",
     "author_id": 1,
+    "author_name": "Jane Austen",
     "isbn": "9780141439518",
     "publication_year": 1813,
     "id": 1
@@ -242,6 +248,7 @@ Devuelve una lista de libros disponibles:
   {
     "title": "Pride and Prejudice",
     "author_id": 1,
+    "author_name": "Jane Austen",
     "isbn": "9780141439518",
     "publication_year": 1813,
     "id": 1
@@ -258,6 +265,7 @@ Devuelve una lista de libros con el mismo formato plano. Actualmente no incluye 
   {
     "title": "Pride and Prejudice",
     "author_id": 1,
+    "author_name": "Jane Austen",
     "isbn": "9780141439518",
     "publication_year": 1813,
     "id": 1
@@ -274,6 +282,7 @@ Devuelve una lista de libros:
   {
     "title": "Pride and Prejudice",
     "author_id": 1,
+    "author_name": "Jane Austen",
     "isbn": "9780141439518",
     "publication_year": 1813,
     "id": 1
@@ -289,6 +298,7 @@ Devuelve el libro con el mismo formato plano. Actualmente no incluye una lista d
 {
   "title": "Pride and Prejudice",
   "author_id": 1,
+  "author_name": "Jane Austen",
   "isbn": "9780141439518",
   "publication_year": 1813,
   "id": 1

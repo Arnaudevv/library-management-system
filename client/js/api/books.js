@@ -5,6 +5,7 @@ function toBook(dto) {
         id: dto.id,
         title: dto.title,
         authorId: dto.author_id,
+        authorName: dto.author_name,
         isbn: dto.isbn,
         year: dto.publication_year,
     };
@@ -18,10 +19,6 @@ export async function getAllBooks() {
 
 export async function getAvailableBooks() {
     return toBooks(await request("/books/available"));
-}
-
-export async function getBooksByAuthor(authorId) {
-    return toBooks(await request(`/books/by-author/${authorId}`));
 }
 
 export async function searchBooks(type, value) {
@@ -40,4 +37,8 @@ export async function createBook({ title, authorId, isbn, year }) {
         body: { title, author_id: authorId, isbn, publication_year: year },
     });
     return toBook(dto);
+}
+
+export async function deleteBook(bookId) {
+    await request(`/books/${bookId}`, { method: "DELETE" });
 }

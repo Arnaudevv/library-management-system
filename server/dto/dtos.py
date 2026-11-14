@@ -20,6 +20,7 @@ class BookDTO:
 
     title: str
     author_id: int
+    author_name: Optional[str] = None
     isbn: Optional[str] = None
     publication_year: Optional[int] = None
     id: Optional[int] = None
