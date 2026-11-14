@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/books.css">
+    <link rel="stylesheet" href="css/authors.css">
+    <link rel="stylesheet" href="css/borrowers.css">
+    <link rel="stylesheet" href="css/loans.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- View Switcher -->
+    <header class="header">
+        <button id="books-btn" class="view-toggle">
+            <h2 class="biew-toggle-icon">📖</h2>
+            <h2 class="vew-toggle-tittle">Books</h2>
+        </button>
+        <button id="authors-btn" class="view-toggle">
+            <h2 class="biew-toggle-icon">✍️</h2>
+            <h2 class="vew-toggle-tittle">Authors</h2>
+        </button>
+        <button id="borrowers-btn" class="view-toggle">
+            <h2 class="biew-toggle-icon">🪪</h2>
+            <h2 class="vew-toggle-tittle">Borrowers</h2>
+        </button>
+        <button id="loans-btn" class="view-toggle">
+            <h2 class="biew-toggle-icon">🔖</h2>
+            <h2 class="vew-toggle-tittle">Loans</h2>
+        </button>
+    </header>
+
+    <main class="main-content">
+        <section class="books-view">
+            <div class="books-query-section">
+                
+                <div class="get-all-books-container">
+                    <button id="get-all-books-btn">Get all books</button>
+                    <button id="get-all-available-books-btn">Get all available books</button>
+                </div>
+
+                <div class="search-book-by-parameters-container">
+                    <select name="search-parameter" id="search-parameter">
+                        <option value="book-id">Id</option>
+                        <option value="book-isbn">ISBN</option>
+                        <option value="book-title">Title</option>
+                    </select>
+                    <input type="text" id="search-input" placeholder="Search by parameter">
+                    <button id="search-btn">Search</button>
+                </div>
+
+                <div class="filter-book-by-author-container">
+                    <select id="author-filter">
+                        <option value="">All authors</option>
+                    </select>
+                    <button id="author-filter-btn">Search</button>
+                </div>
+
+                <content class="books-list-container">
+                    <item class="book-item">
+                        <h3 class="book-title">Cien años de soledad</h3>
+                        <span class="book-author">Gabriel García Márquez</span>
+                        <span class="book-isbn">978-0307474728</span>
+                        <span class="book-year">1967</span>
+                    </item>
+                </content>
+                
+            </div>
+
+            <div class="create-book-section">
+                <h3 class="create-book-title">Create book</h3>
+
+                <form class="create-book-form" id="create-book-form">
+
+                    <div class="create-book-field">
+                        <label class="create-book-label" for="create-book-title-input">Title</label>
+                        <input type="text" id="create-book-title-input" placeholder="Book title">
+                    </div>
+
+                    <div class="create-book-field">
+                        <label class="create-book-label" for="create-book-author">Author</label>
+                        <select id="create-book-author" class="author-select">
+                            <option value="">Select an author</option>
+                        </select>
+                    </div>
+
+                    <div class="create-book-field">
+                        <span class="create-book-label">ISBN</span>
+                        <div class="create-book-isbn-container">
+                            <p id="create-book-isbn" class="create-book-isbn">Not generated</p>
+                            <button type="button" id="generate-isbn-btn">Generate</button>
+                        </div>
+                    </div>
+
+                    <div class="create-book-field">
+                        <label class="create-book-label" for="create-book-year">Year</label>
+                        <input type="number" id="create-book-year" placeholder="Publication year">
+                    </div>
+
+                    <button type="submit" id="create-book-btn">Create book</button>
+                </form>
+            </div>
+        </section>
+        
+
+
+        
+        <section class="authors-view">authors</section>
+        <section class="borrowers-view">borrowers</section>
+        <section class="loans-view">loans</section>
+    </main>
+
+    <script src="js/index.js"></script>
+</body>
+
+</html>

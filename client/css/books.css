@@ -1,0 +1,343 @@
+@import './style.css';
+
+.books-view {
+    /* border: 1px solid red; */
+    width: 100%;
+    /* height: 100%; */
+    flex: 1;
+    min-height: 0;
+    box-sizing: border-box;
+    display: none;
+    /* display: flex; */
+    gap: 10px;
+    padding: 30px;
+}
+
+.books-view.active {
+    display: flex;
+    flex-direction: row;
+}
+
+
+/* ------- BOOKS QUERY SECTION --------*/
+.books-query-section {
+    /* border: 1px solid white; */
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+.create-book-section {
+    /* border: 1px solid white; */
+    width: 30%;
+}
+
+.get-all-books-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+#get-all-books-btn, #get-all-available-books-btn {
+    height: 36px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    width: 150px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+#get-all-available-books-btn {
+    width: 200px;
+}
+
+/* --- Search by parameters --- */
+.search-book-by-parameters-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.search-book-by-parameters-container select,
+.search-book-by-parameters-container input,
+.search-book-by-parameters-container button {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.search-book-by-parameters-container select {
+    width: 150px;
+    flex-shrink: 0;
+}
+.search-book-by-parameters-container input { width: 100%; }
+
+.search-book-by-parameters-container button {
+    cursor: pointer;
+    transition: background-color 0.15s;
+    width: 150px;
+    flex-shrink: 0;
+}
+
+
+/* --- Search by authors --- */
+.filter-book-by-author-container{
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+}
+.filter-book-by-author-container select {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.filter-book-by-author-container button {
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    height: 36px;
+    width: 150px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+
+/* --- Buttons: hover and active (shared) --- */
+#get-all-books-btn:hover, #get-all-available-books-btn:hover,
+.search-book-by-parameters-container button:hover,
+.filter-book-by-author-container button:hover {
+    background-color: var(--dark3);
+}
+
+#get-all-books-btn:active, #get-all-available-books-btn:active,
+.search-book-by-parameters-container button:active,
+.filter-book-by-author-container button:active {
+    background-color: var(--dark4);
+}
+
+
+
+/* ------------------------- BOOKS LIST ------------------------- */
+.books-list-container {
+    background-color: var(--dark2);
+    width: 100%;
+    box-sizing: border-box;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+.books-list-container{background-color:var(--dark2);width:100%;box-sizing:border-box;flex:1;min-height:0;overflow-y:auto;border-radius:8px;scrollbar-width:thin;scrollbar-color:var(--dark4) transparent}
+.books-list-container::-webkit-scrollbar{width:6px}
+.books-list-container::-webkit-scrollbar-track{background:transparent}
+.books-list-container::-webkit-scrollbar-thumb{background:var(--dark4);border-radius:3px}
+.books-list-container::-webkit-scrollbar-thumb:hover{background:var(--dark5)}
+
+/* ------------------- BOOK ------------------- */
+.book-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--dark3);
+    font-size: 14px;
+}
+
+.book-item:last-child {
+    border-bottom: none;
+}
+
+.book-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-author {
+    width: 200px;
+    flex-shrink: 0;
+    color: var(--dark6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-isbn {
+    width: 140px;
+    flex-shrink: 0;
+    color: var(--dark5);
+}
+
+.book-year {
+    width: 60px;
+    flex-shrink: 0;
+    text-align: right;
+    color: var(--dark5);
+}
+
+
+/* ------- CREATE BOOK SECTION --------*/
+.create-book-section {
+    width: 30%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    min-height: 0;
+    overflow-y: auto;
+    background-color: var(--dark2);
+    border-radius: 8px;
+}
+
+.create-book-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.create-book-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+}
+
+.create-book-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.create-book-label {
+    font-size: 12px;
+    color: var(--dark6);
+}
+
+/* --- Inputs and selects --- */
+.create-book-field input,
+.create-book-field select {
+    width: 100%;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark3);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.create-book-field input:focus,
+.create-book-field select:focus {
+    border-color: var(--dark6);
+}
+
+.create-book-field input::placeholder {
+    color: var(--dark5);
+}
+
+.create-book-field input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.create-book-field input[type="number"]::-webkit-outer-spin-button,
+.create-book-field input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* --- ISBN --- */
+.create-book-isbn-container {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.create-book-isbn {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    border: 1px dashed var(--dark4);
+    border-radius: 5px;
+    color: var(--dark5);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.create-book-isbn.generated {
+    border-style: solid;
+    color: white;
+}
+
+#generate-isbn-btn,
+#create-book-btn {
+    height: 36px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark3);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+#generate-isbn-btn {
+    width: 100px;
+    flex-shrink: 0;
+}
+
+#create-book-btn {
+    width: 100%;
+    margin-top: auto;
+}
+
+#generate-isbn-btn:hover,
+#create-book-btn:hover {
+    background-color: var(--dark4);
+}
+
+#generate-isbn-btn:active,
+#create-book-btn:active {
+    background-color: var(--dark2);
+}

@@ -77,20 +77,34 @@ def _validate_headers(headers: dict[str, str]) -> dict[str, str]:
 
 
 def _serialize_body(body: Any) -> bytes:
-    """Serialize DTOs and supported JSON values as UTF-8 JSON bytes."""
-    if is_dataclass(body) and not isinstance(body, type):
-        body = asdict(body)
+    """Serialize supported response values as UTF-8 JSON bytes."""
+    if isinstance(body, bytes):
+        return body
+
     try:
-        return json.dumps(body, default=_json_default).encode("utf-8")
+        return json.dumps(_to_json_compatible(body)).encode("utf-8")
     except (TypeError, ValueError) as error:
         raise ValueError("Response body is not JSON serializable") from error
 
 
-def _json_default(value: Any) -> str:
-    """Convert dates to ISO strings for JSON serialization."""
+def _to_json_compatible(value: Any) -> Any:
+    """Convert nested DTOs and supported values into JSON-compatible values."""
+    if is_dataclass(value) and not isinstance(value, type):
+        return _to_json_compatible(asdict(value))
+
+    if isinstance(value, dict):
+        return {
+            key: _to_json_compatible(item)
+            for key, item in value.items()
+        }
+
+    if isinstance(value, (list, tuple)):
+        return [_to_json_compatible(item) for item in value]
+
     if isinstance(value, (dt.date, dt.datetime)):
         return value.isoformat()
-    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+
+    return value
 
 
 def _reason_phrase(status: StatusCode) -> str:

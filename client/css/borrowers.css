@@ -1,0 +1,13 @@
+@import './style.css';
+
+.borrowers-view {
+    border: 1px solid blue;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: none;
+}
+
+.borrowers-view.active {
+    display: flex;
+}
