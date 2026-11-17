@@ -1,19 +1,15 @@
+"""Read HTTP request bytes asynchronously and validate the request contents."""
+
 from __future__ import annotations
 
+import asyncio
 import json
-import socket
 from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
 from .errors import BodyTooLargeError, HeadersTooLargeError, ProtocolError
-"""Parse and validate the supported HTTP request protocol.
 
-This module validates the request headers, request line, Content-Length,
-body completeness, UTF-8 decoding, and JSON syntax when applicable.
-"""
-
-CHUNK_SIZE = 4096
 MAX_HEADER_SIZE = 16 * 1024
 
 
@@ -26,10 +22,17 @@ class Request:
     body: Any | None = None
 
 
-def read_request(conn: socket.socket) -> Request:
-    """Read and validate one complete request from a client socket."""
-    data = _read_headers(conn)
-    head, _, body = data.partition(b"\r\n\r\n")
+async def read_request(reader: asyncio.StreamReader) -> Request:
+    """Read one request asynchronously, then validate and parse it."""
+    try:
+        data = await reader.readuntil(b"\r\n\r\n")
+    except asyncio.LimitOverrunError as error:
+        raise HeadersTooLargeError() from error
+
+    if len(data) > MAX_HEADER_SIZE:
+        raise HeadersTooLargeError()
+
+    head = data[:-4]
 
     try:
         head_text = head.decode("iso-8859-1")
@@ -42,7 +45,7 @@ def read_request(conn: socket.socket) -> Request:
 
     if length > MAX_HEADER_SIZE * 64:
         raise BodyTooLargeError()
-    body = _read_body(conn, body, length)
+    body = await reader.readexactly(length)
     parsed_body = _parse_body(body, headers)
 
     url = urlsplit(target)
@@ -62,19 +65,6 @@ def read_request(conn: socket.socket) -> Request:
         headers=headers,
         body=parsed_body,
     )
-
-
-def _read_headers(conn: socket.socket) -> bytes:
-    """Read headers until the header terminator and enforce their size limit."""
-    data = b""
-    while b"\r\n\r\n" not in data:
-        chunk = conn.recv(CHUNK_SIZE)
-        if not chunk:
-            raise ProtocolError(code="incomplete_headers", message="The request headers are incomplete.")
-        data += chunk
-        if len(data) > MAX_HEADER_SIZE:
-            raise HeadersTooLargeError()
-    return data
 
 
 def _parse_head(head: str) -> tuple[str, dict[str, str]]:
@@ -126,19 +116,6 @@ def _parse_content_length(headers: dict[str, str]) -> int:
             message="Content-Length must be a non-negative integer.",
         )
     return int(value)
-
-
-def _read_body(conn: socket.socket, body: bytes, length: int) -> bytes:
-    """Read exactly the number of body bytes declared by Content-Length."""
-    if len(body) > length:
-        return body[:length]
-
-    while len(body) < length:
-        chunk = conn.recv(min(CHUNK_SIZE, length - len(body)))
-        if not chunk:
-            raise ProtocolError(code="incomplete_body", message="The request body is incomplete.")
-        body += chunk
-    return body
 
 
 def _parse_body(body: bytes, headers: dict[str, str]) -> Any | None:

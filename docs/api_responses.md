@@ -1,11 +1,11 @@
-# Respuestas de la API
+# API Responses
 
-## Formato crudo que recibe el cliente
+## Raw format received by the client
 
-El servidor no envía objetos Python (`DTO`) al navegador. Convierte el DTO a JSON,
-lo codifica como UTF-8 y lo envía dentro de una respuesta HTTP.
+The server does not send Python objects (`DTO`) to the browser. It converts the DTO to JSON,
+encodes it as UTF-8, and sends it inside an HTTP response.
 
-Una respuesta real tiene esta estructura:
+A real response has this structure:
 
 ```http
 HTTP/1.1 200 OK
@@ -16,20 +16,20 @@ connection: close
 {"name": "Jane Austen", "nationality": "English", "id": 1}
 ```
 
-La respuesta se divide en:
+The response is divided into:
 
 ```text
-línea de estado
-cabeceras
-línea vacía
-cuerpo JSON
+status line
+headers
+blank line
+JSON body
 ```
 
-La línea vacía separa las cabeceras del cuerpo. El valor de `content-length`
-indica el tamaño del cuerpo en bytes. El cuerpo es el JSON que debe interpretar
-el cliente; no incluye las cabeceras HTTP.
+The blank line separates the headers from the body. The value of `content-length`
+indicates the size of the body in bytes. The body is the JSON the client must
+interpret; it does not include the HTTP headers.
 
-Para una lista, el cuerpo crudo sería:
+For a list, the raw response would be:
 
 ```http
 HTTP/1.1 200 OK
@@ -40,18 +40,18 @@ connection: close
 [{"name": "Jane Austen", "nationality": "English", "id": 1}]
 ```
 
-El espacio y los saltos de línea del ejemplo son únicamente para mostrar la
-separación HTTP. El servidor serializa el JSON en una sola línea.
+The spaces and line breaks in the example are only there to show the HTTP
+separation. The server serializes the JSON on a single line.
 
-## Respuestas documentadas
+## Documented responses
 
-Los siguientes ejemplos muestran el **cuerpo JSON** de cada respuesta. Para
-obtener la respuesta HTTP completa, hay que envolver ese cuerpo con la línea de
-estado y las cabeceras del ejemplo anterior.
+The following examples show the **JSON body** of each response. To get the
+full HTTP response, wrap that body with the status line and headers from the
+previous example.
 
 ## Author
 
-Un autor se devuelve así:
+An author is returned like this:
 
 ```json
 {
@@ -63,7 +63,7 @@ Un autor se devuelve así:
 
 ### `POST /authors`
 
-Devuelve el autor creado:
+Returns the created author:
 
 ```json
 {
@@ -75,7 +75,7 @@ Devuelve el autor creado:
 
 ### `GET /authors`
 
-Devuelve una lista:
+Returns a list:
 
 ```json
 [
@@ -89,7 +89,7 @@ Devuelve una lista:
 
 ### `GET /authors/{author_id}`
 
-Devuelve un autor:
+Returns an author:
 
 ```json
 {
@@ -101,7 +101,7 @@ Devuelve un autor:
 
 ### `GET /authors?name={name}`
 
-Devuelve un autor:
+Returns an author:
 
 ```json
 {
@@ -113,7 +113,7 @@ Devuelve un autor:
 
 ### `GET /authors/search?text={text}`
 
-Devuelve una lista de autores cuyo `name` contiene el texto:
+Returns a list of authors whose `name` contains the text:
 
 ```json
 [
@@ -127,7 +127,7 @@ Devuelve una lista de autores cuyo `name` contiene el texto:
 
 ### `GET /authors/{author_id}/books`
 
-Devuelve el autor con el mismo formato plano. Actualmente no incluye una lista de libros:
+Returns the author in the same flat format. It currently does not include a list of books:
 
 ```json
 {
@@ -139,7 +139,7 @@ Devuelve el autor con el mismo formato plano. Actualmente no incluye una lista d
 
 ### `DELETE /authors/{author_id}`
 
-Devuelve un booleano:
+Returns a boolean:
 
 ```json
 true
@@ -147,7 +147,7 @@ true
 
 ## Book
 
-Un libro se devuelve así:
+A book is returned like this:
 
 ```json
 {
@@ -162,7 +162,7 @@ Un libro se devuelve así:
 
 ### `POST /books`
 
-Devuelve el libro creado:
+Returns the created book:
 
 ```json
 {
@@ -177,7 +177,7 @@ Devuelve el libro creado:
 
 ### `GET /books`
 
-Devuelve una lista:
+Returns a list:
 
 ```json
 [
@@ -194,7 +194,7 @@ Devuelve una lista:
 
 ### `GET /books/{book_id}`
 
-Devuelve un libro:
+Returns a book:
 
 ```json
 {
@@ -209,7 +209,7 @@ Devuelve un libro:
 
 ### `GET /books?isbn={isbn}`
 
-Devuelve un libro:
+Returns a book:
 
 ```json
 {
@@ -224,7 +224,7 @@ Devuelve un libro:
 
 ### `GET /books/search?text={text}`
 
-Devuelve una lista de libros cuyo `title` contiene el texto:
+Returns a list of books whose `title` contains the text:
 
 ```json
 [
@@ -241,7 +241,7 @@ Devuelve una lista de libros cuyo `title` contiene el texto:
 
 ### `GET /books/available`
 
-Devuelve una lista de libros disponibles:
+Returns a list of available books:
 
 ```json
 [
@@ -258,7 +258,7 @@ Devuelve una lista de libros disponibles:
 
 ### `GET /books/with-authors`
 
-Devuelve una lista de libros con el mismo formato plano. Actualmente no incluye un objeto `author`:
+Returns a list of books in the same flat format. It currently does not include an `author` object:
 
 ```json
 [
@@ -275,7 +275,7 @@ Devuelve una lista de libros con el mismo formato plano. Actualmente no incluye 
 
 ### `GET /books/by-author/{author_id}`
 
-Devuelve una lista de libros:
+Returns a list of books:
 
 ```json
 [
@@ -292,7 +292,7 @@ Devuelve una lista de libros:
 
 ### `GET /books/{book_id}/loans`
 
-Devuelve el libro con el mismo formato plano. Actualmente no incluye una lista de préstamos:
+Returns the book in the same flat format. It currently does not include a list of loans:
 
 ```json
 {
@@ -313,7 +313,7 @@ true
 
 ## Borrower
 
-Un borrower se devuelve así:
+A borrower is returned like this:
 
 ```json
 {
@@ -325,7 +325,7 @@ Un borrower se devuelve así:
 
 ### `POST /borrowers`
 
-Devuelve el borrower creado:
+Returns the created borrower:
 
 ```json
 {
@@ -337,7 +337,7 @@ Devuelve el borrower creado:
 
 ### `GET /borrowers`
 
-Devuelve una lista:
+Returns a list:
 
 ```json
 [
@@ -351,7 +351,7 @@ Devuelve una lista:
 
 ### `GET /borrowers/{borrower_id}`
 
-Devuelve un borrower:
+Returns a borrower:
 
 ```json
 {
@@ -363,7 +363,7 @@ Devuelve un borrower:
 
 ### `GET /borrowers?email={email}`
 
-Devuelve un borrower:
+Returns a borrower:
 
 ```json
 {
@@ -375,7 +375,7 @@ Devuelve un borrower:
 
 ### `GET /borrowers/search?text={text}`
 
-Devuelve una lista de borrowers cuyo `name` contiene el texto:
+Returns a list of borrowers whose `name` contains the text:
 
 ```json
 [
@@ -389,7 +389,7 @@ Devuelve una lista de borrowers cuyo `name` contiene el texto:
 
 ### `GET /borrowers/{borrower_id}/loans`
 
-Devuelve el borrower con el mismo formato plano. Actualmente no incluye una lista de préstamos:
+Returns the borrower in the same flat format. It currently does not include a list of loans:
 
 ```json
 {
@@ -407,7 +407,7 @@ true
 
 ## Loan
 
-Un loan incluye sus IDs, el nombre del borrower, el título del libro, la fecha de inicio, la fecha prevista de devolución y, si ya se devolvió, la fecha real de devolución.
+A loan includes its IDs, the borrower's name, the book's title, the start date, the expected return date and, if it has already been returned, the actual return date.
 
 ```json
 {
@@ -422,11 +422,11 @@ Un loan incluye sus IDs, el nombre del borrower, el título del libro, la fecha 
 }
 ```
 
-`loan_date` se establece en el backend al crear el loan. `return_date` es `null` hasta que se devuelve el libro; `due_date` representa la fecha prevista y no cierra el loan.
+`loan_date` is set by the backend when the loan is created. `return_date` is `null` until the book is returned; `due_date` represents the expected date and does not close the loan.
 
 ### `POST /loans`
 
-El cuerpo requiere `book_id`, `borrower_id` y `due_date`:
+The body requires `book_id`, `borrower_id` and `due_date`:
 
 ```json
 {
@@ -436,7 +436,7 @@ El cuerpo requiere `book_id`, `borrower_id` y `due_date`:
 }
 ```
 
-Devuelve el loan creado:
+Returns the created loan:
 
 ```json
 {
@@ -453,7 +453,7 @@ Devuelve el loan creado:
 
 ### `GET /loans`
 
-Devuelve todos los loans, con sus datos de libro y borrower:
+Returns all loans, with their book and borrower data:
 
 ```json
 [
@@ -472,7 +472,7 @@ Devuelve todos los loans, con sus datos de libro y borrower:
 
 ### `GET /loans/{loan_id}`
 
-Devuelve un préstamo:
+Returns a loan:
 
 ```json
 {
@@ -489,7 +489,7 @@ Devuelve un préstamo:
 
 ### `GET /loans/by-book/{book_id}`
 
-Devuelve una lista de préstamos:
+Returns a list of loans:
 
 ```json
 [
@@ -508,7 +508,7 @@ Devuelve una lista de préstamos:
 
 ### `GET /loans/by-borrower/{borrower_id}`
 
-Devuelve una lista de préstamos:
+Returns a list of loans:
 
 ```json
 [
@@ -527,7 +527,7 @@ Devuelve una lista de préstamos:
 
 ### `GET /loans/active`
 
-Devuelve una lista de préstamos cuyo `return_date` es `null`:
+Returns a list of loans whose `return_date` is `null`:
 
 ```json
 [
@@ -546,7 +546,7 @@ Devuelve una lista de préstamos cuyo `return_date` es `null`:
 
 ### `GET /loans/history`
 
-Devuelve una lista de préstamos cuyo `return_date` no es `null`:
+Returns a list of loans whose `return_date` is not `null`:
 
 ```json
 [
@@ -565,7 +565,7 @@ Devuelve una lista de préstamos cuyo `return_date` no es `null`:
 
 ### `POST /loans/{loan_id}/return`
 
-Registra la fecha real de devolución en el backend y devuelve el loan actualizado:
+Records the actual return date in the backend and returns the updated loan:
 
 ```json
 {
@@ -582,7 +582,7 @@ Registra la fecha real de devolución en el backend y devuelve el loan actualiza
 
 ### `GET /loans/with-relations`
 
-Devuelve una lista de loans con el mismo formato plano:
+Returns a list of loans in the same flat format:
 
 ```json
 [
@@ -601,7 +601,7 @@ Devuelve una lista de loans con el mismo formato plano:
 
 ### `GET /loans/{loan_id}/relations`
 
-Devuelve un loan con el mismo formato plano:
+Returns a loan in the same flat format:
 
 ```json
 {
@@ -622,9 +622,9 @@ Devuelve un loan con el mismo formato plano:
 true
 ```
 
-## Errores
+## Errors
 
-Los errores públicos se devuelven con esta estructura:
+Public errors are returned with this structure:
 
 ```json
 {
@@ -635,7 +635,7 @@ Los errores públicos se devuelven con esta estructura:
 }
 ```
 
-Un error interno se devuelve así:
+An internal error is returned like this:
 
 ```json
 {
