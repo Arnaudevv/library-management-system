@@ -18,6 +18,6 @@ for (const id of Object.keys(VIEWS)) {
     document.getElementById(id).addEventListener("click", () => showView(id));
 }
 
-showView("authors-btn");   // initial view
+showView("borrowers-btn");   // initial view
 
 // ------------------------------------------------------------

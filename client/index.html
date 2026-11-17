@@ -174,13 +174,71 @@
 
 
 
-        <section class="borrowers-view">borrowers</section>
+        <!---------- BORROWERS VIEW ---------->
+        <section class="borrowers-view">
+            <div class="borrowers-query-section">
+                <div class="get-all-borrowers-container">
+                    <button id="get-all-borrowers-btn">Get all borrowers</button>
+                </div>
+
+                <div class="search-borrower-by-parameters-container">
+                    <select name="search-borrower-parameter" id="search-borrower-parameter">
+                        <option value="borrower-id">Id</option>
+                        <option value="borrower-name">Name</option>
+                    </select>
+                    <input type="text" id="search-borrower-input" placeholder="Search by parameter">
+                    <button id="search-borrower-by-parameters-btn">Search</button>
+                </div>
+
+                <content class="borrowers-list-container">
+                    <!--
+                    <item class="borrower-item" data-borrower-id="1">
+                        <h3 class="borrower-name">Ada Lovelace</h3>
+                        <p class="borrower-email">ada@example.com</p>
+                        <div class="borrower-actions">
+                            <button type="button" class="get-borrower-loans-btn" disabled>📖</button>
+                            <button type="button" class="delete-borrower-btn" disabled>🗑️</button>
+                        </div>
+                    </item>
+                    -->
+                </content>
+            </div>
+
+            <div class="create-borrower-section">
+                <h3 class="create-borrower-title">Create borrower</h3>
+
+                <form class="create-borrower-form" id="create-borrower-form">
+                    <div class="create-borrower-field">
+                        <label class="create-borrower-label" for="create-borrower-name-input">Name</label>
+                        <input type="text" id="create-borrower-name-input" placeholder="Borrower name">
+                    </div>
+
+                    <div class="create-borrower-field">
+                        <label class="create-borrower-label" for="create-borrower-email-input">Email</label>
+                        <input type="email" id="create-borrower-email-input" placeholder="Borrower email">
+                    </div>
+
+                    <button type="button" id="create-borrower-btn">Create borrower</button>
+                </form>
+
+                <h3 class="borrower-loans-list">Borrower's loans</h3>
+                <content class="borrower-loans-list-container">
+                    <!--
+                    <div class="borrower-loan-item">
+                        <h4>1984</h4>
+                        <p>Loan date: 2026-01-10 · Return date: Not returned</p>
+                    </div>
+                    -->
+                </content>
+            </div>
+        </section>
         <section class="loans-view">loans</section>
     </main>
 
     <script src="js/index.js"></script>
     <script type="module" src="js/views/books.js"></script>
     <script type="module" src="js/views/authors.js"></script>
+    <script type="module" src="js/views/borrowers.js"></script>
 </body>
 
 </html>

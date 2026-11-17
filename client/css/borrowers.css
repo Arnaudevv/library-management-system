@@ -1,13 +1,379 @@
 @import './style.css';
 
 .borrowers-view {
-    border: 1px solid blue;
     width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     box-sizing: border-box;
     display: none;
+    gap: 10px;
+    padding: 30px;
 }
 
 .borrowers-view.active {
     display: flex;
+    flex-direction: row;
+}
+
+/* ------- BORROWERS QUERY SECTION --------*/
+.borrowers-query-section {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+.get-all-borrowers-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+#get-all-borrowers-btn {
+    width: 150px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+/* --- Search by parameters --- */
+.search-borrower-by-parameters-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.search-borrower-by-parameters-container select,
+.search-borrower-by-parameters-container input,
+.search-borrower-by-parameters-container button {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.search-borrower-by-parameters-container select {
+    width: 150px;
+    flex-shrink: 0;
+}
+
+.search-borrower-by-parameters-container input {
+    width: 100%;
+}
+
+.search-borrower-by-parameters-container button {
+    width: 150px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+/* --- Buttons: hover and active --- */
+#get-all-borrowers-btn:hover,
+.search-borrower-by-parameters-container button:hover {
+    background-color: var(--dark3);
+}
+
+#get-all-borrowers-btn:active,
+.search-borrower-by-parameters-container button:active {
+    background-color: var(--dark4);
+}
+
+/* ------------------------- BORROWERS LIST ------------------------- */
+.borrowers-list-container {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    border-radius: 8px;
+    background-color: var(--dark2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark4) transparent;
+}
+
+.borrowers-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.borrowers-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.borrowers-list-container::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--dark4);
+}
+
+.borrowers-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--dark5);
+}
+
+/* ------------------- BORROWER ------------------- */
+.borrower-item {
+    display: grid;
+    grid-template-columns: minmax(0, 35%) minmax(120px, 20%) minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--dark3);
+    font-size: 14px;
+}
+
+.borrower-item:last-child {
+    border-bottom: none;
+}
+
+.borrower-name {
+    grid-column: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.borrower-email {
+    grid-column: 2;
+    width: 100%;
+    overflow: hidden;
+    color: var(--dark6);
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.borrower-actions {
+    grid-column: 4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.borrower-actions button {
+    width: 33px;
+    height: 33px;
+    padding: 5px;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.get-borrower-loans-btn {
+    background-color: var(--dark4);
+}
+
+.delete-borrower-btn {
+    background-color: #ef4444;
+}
+
+.get-borrower-loans-btn:hover {
+    background-color: var(--dark5);
+}
+
+.delete-borrower-btn:hover {
+    background-color: #dc2626;
+}
+
+.borrower-actions button:active {
+    transform: scale(0.96);
+}
+
+.get-borrower-loans-btn:active {
+    background-color: var(--dark3);
+}
+
+.delete-borrower-btn:active {
+    background-color: #b91c1c;
+}
+
+/* ------- CREATE BORROWER SECTION --------*/
+.create-borrower-section {
+    width: 30%;
+    min-height: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.create-borrower-title {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 16px 16px 0px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    flex-shrink: 0;
+    background-color: var(--dark2);
+}
+
+.borrower-loans-list {
+    flex-shrink: 0;
+    padding: 16px 16px 0;
+    background-color: var(--dark2);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+
+.create-borrower-form {
+    height: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    background-color: var(--dark2);
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.create-borrower-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.create-borrower-label {
+    color: var(--dark6);
+    font-size: 12px;
+}
+
+.create-borrower-field input {
+    width: 100%;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    outline: none;
+    background-color: var(--dark3);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.15s;
+}
+
+.create-borrower-field input:focus {
+    border-color: var(--dark6);
+}
+
+.create-borrower-field input::placeholder {
+    color: var(--dark5);
+}
+
+#create-borrower-btn {
+    width: 100%;
+    height: 36px;
+    margin-top: auto;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark3);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+#create-borrower-btn:hover {
+    background-color: var(--dark4);
+}
+
+#create-borrower-btn:active {
+    background-color: var(--dark2);
+}
+
+/* ------- BORROWER LOANS LIST --------*/
+.borrower-loans-list {
+    margin-top: 15px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 16px 16px 10px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--dark4);
+    background-color: var(--dark2);
+}
+
+.borrower-loans-list-container {
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex: 1;
+    background-color: var(--dark2);
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark4) transparent;
+}
+
+.borrower-loans-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.borrower-loans-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.borrower-loans-list-container::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--dark4);
+}
+
+.borrower-loans-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--dark5);
+}
+
+.borrower-loan-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--dark3);
+    background-color: var(--dark2);
+    transition: background-color 0.15s;
+}
+
+.borrower-loan-item:last-child {
+    border-bottom: none;
+}
+
+.borrower-loan-item:hover {
+    background-color: var(--dark3);
+}
+
+.borrower-loan-item h4 {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--dark6);
+    font-size: 14px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.borrower-loan-item p {
+    color: var(--dark5);
+    font-size: 12px;
 }
