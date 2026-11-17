@@ -30,7 +30,8 @@ def handle_connection(conn: socket.socket, addr: tuple[str, int]):
         print(
             f"[RESPONSE] {request.method} {request.path} "
             f"{conn.getpeername()[0]}:{conn.getpeername()[1]} -> "
-            f"{conn.getsockname()[0]}:{conn.getsockname()[1]} ",
+            f"{conn.getsockname()[0]}:{conn.getsockname()[1]} "
+            f"\n",
             flush=True,
         )
         
@@ -39,8 +40,6 @@ def handle_connection(conn: socket.socket, addr: tuple[str, int]):
         response = ErrorManager.handle(error)
         conn.sendall(build_response(response))
     
-
-
 
 def socket_listener():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:

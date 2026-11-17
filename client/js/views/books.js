@@ -1,4 +1,5 @@
 import * as booksApi from "../api/books.js";
+import * as authorsApi from "../api/authors.js"
 
 /* ------------------------------------ API USAGE ------------------------------------ */
 
@@ -22,25 +23,25 @@ function manageGetAvailableBooks() {
 }
 
 function manageSearchBook() {
-    const type  = document.getElementById("search-parameter").value;
-    const value = document.getElementById("search-input").value.trim();
+    const type  = document.getElementById("search-book-parameter").value;
+    const value = document.getElementById("search-book-input").value.trim();
     if (!value) {
-        console.log("Enter a value to search.")
+        renderError("Search input is empty.");   
         return
     }
     runQuery(() => booksApi.searchBooks(type, value));
 }
 
 function manageFilterByAuthor() {
-    const authorId = document.getElementById("author-filter").value;
+    const authorId = document.getElementById("book-by-author-filter").value;
     runQuery(() => authorId ? booksApi.getBooksByAuthor(authorId) : booksApi.getAllBooks());
 }
 
-async function manageCreateBook(event) {
-    event.preventDefault();
+async function manageCreateBook() {
     const data = getCreateBookData();       
     try {
         await booksApi.createBook(data);
+        await manageGetAllBooks();
         resetCreateBookForm();
     } catch (error) {
         renderError(error.message);
@@ -67,28 +68,37 @@ function renderBooks(books) {
 }
 
 
-
 // ----- GET ALL BOOKS
 document.getElementById('get-all-books-btn').addEventListener('click', () => {
     manageGetAllBooks()
-    resetBookSearchFilters()
+    resetSearchBookByParameters()
+    resetSearchBookByAuthors()
 })
 
 // ----- GET ALL AVAILABLE BOOKS
 document.getElementById('get-all-available-books-btn').addEventListener('click', () => {
     manageGetAvailableBooks()
-    resetBookSearchFilters()
+    resetSearchBookByParameters()
+    resetSearchBookByAuthors()
 })
 
-// ----- GET ALL AVAILABLE BOOKS
+// ----- SEARCH BOOK BY PARAMETERS
 document.getElementById('search-book-by-paremeters-btn').addEventListener('click', () => {
     console.log("asdas")
     manageSearchBook()
-    resetBookSearchFilters()
+    resetSearchBookByAuthors()
+})
+
+// ------ GET BOOKS BY AUTHOR
+document.getElementById('author-filter-btn').addEventListener('click', () => {
+    manageFilterByAuthor()
+    resetSearchBookByParameters()
 })
 
 // ----- CREATE BOOK
-document.getElementById('create-book-btn').addEventListener('submit', manageCreateBook)
+document.getElementById('create-book-btn').addEventListener('click', () => {
+    manageCreateBook()
+})
 
 // ----- DELETE BOOK
 document.querySelector(".books-list-container").addEventListener("click", async (event) => {
@@ -98,10 +108,6 @@ document.querySelector(".books-list-container").addEventListener("click", async 
     const bookItem = button.closest(".book-item");
     const bookIdValue = bookItem?.dataset.bookId;
     const bookId = Number(bookIdValue);
-    if (!bookIdValue || !Number.isInteger(bookId) || bookId <= 0) {
-        console.error("Cannot delete book: the item has no valid book ID.");
-        return;
-    }
 
     try {
         await booksApi.deleteBook(bookId);
@@ -114,20 +120,17 @@ document.querySelector(".books-list-container").addEventListener("click", async 
 
 
 
+manageGetAllBooks()
+renderAuthorOptions()
 
-// ----- Helper Functions
+
+// -------------------- Helper Functions
 
 function getCreateBookData() {
-    const title = document
-        .getElementById("create-book-title-input")
-        .value
-        .trim();
+    const title = document.getElementById("create-book-title-input").value.trim();
 
     const authorValue = document.getElementById("create-book-author").value;
-    const isbnText = document
-        .getElementById("create-book-isbn")
-        .textContent
-        .trim();
+    const isbnText = document.getElementById("create-book-isbn").textContent.trim();
     const yearValue = document.getElementById("create-book-year").value;
 
     return {
@@ -139,12 +142,71 @@ function getCreateBookData() {
 }
 
 function resetCreateBookForm() {
-    document.getElementById("create-book-form").reset();
-    document.getElementById("create-book-isbn").textContent = "Not generated";
+    document.getElementById("create-book-title-input").value = "";
+    document.getElementById("create-book-author").value = "";
+    document.getElementById("create-book-year").value = "";
+
+    const isbn = document.getElementById("create-book-isbn");
+    isbn.textContent = "Not generated";
+    isbn.classList.remove("generated");
 }
 
-function resetBookSearchFilters() {
-    document.getElementById("search-parameter").value = "book-id";
-    document.getElementById("search-input").value = "";
-    document.getElementById("author-filter").value = "";
+function resetSearchBookByParameters() {
+    document.getElementById("search-book-parameter").value = "book-id";
+    document.getElementById("search-book-input").value = "";
+}
+
+function resetSearchBookByAuthors() {
+    document.getElementById("book-by-author-filter").value = "";
+}
+
+
+// --- Generate random ISBN
+const generateButton = document.getElementById("generate-isbn-btn");
+const isbnField = document.getElementById("create-book-isbn");
+
+generateButton.addEventListener("click", () => {
+    const base = "978" + Array.from({ length: 9 }, () =>
+        Math.floor(Math.random() * 10)
+    ).join("");
+
+    const sum = [...base].reduce(
+        (total, digit, index) => total + Number(digit) * (index % 2 === 0 ? 1 : 3),
+        0
+    );
+
+    const checkDigit = (10 - (sum % 10)) % 10;
+
+    isbnField.textContent = base + checkDigit;
+    isbnField.classList.add("generated");
+});
+
+
+// --- UPDATE AUTHORS LIST ON AUTHOR ACTIONS
+export async function renderAuthorOptions() {
+    let authors;
+    try {
+        authors = await authorsApi.getAllAuthors();
+    } catch (error) {
+        renderError(error.message);
+        return;
+    }
+
+    const selects = [
+        document.getElementById("book-by-author-filter"),
+        document.getElementById("create-book-author"),
+    ];
+
+    selects.forEach(select => {
+        const previous = select.value;
+        const placeholder = select.options[0];
+
+        select.replaceChildren(
+            placeholder,
+            ...authors.map(author => new Option(author.name, author.id))
+        );
+
+        select.value = previous;
+        if (select.selectedIndex === -1) select.value = "";
+    });
 }

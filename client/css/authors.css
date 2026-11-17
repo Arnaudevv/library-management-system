@@ -1,14 +1,386 @@
 @import './style.css';
 
-
 .authors-view {
-    border: 1px solid yellow;
     width: 100%;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     box-sizing: border-box;
     display: none;
+    gap: 10px;
+    padding: 30px;
 }
 
 .authors-view.active {
     display: flex;
+    flex-direction: row;
+}
+
+/* ------- AUTHORS QUERY SECTION --------*/
+.authors-query-section {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+}
+
+.get-all-authors-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+#get-all-authors-btn {
+    height: 36px;
+    width: 150px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+/* --- Search by parameters --- */
+.search-author-by-parameters-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.search-author-by-parameters-container select,
+.search-author-by-parameters-container input,
+.search-author-by-parameters-container button {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark2);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.search-author-by-parameters-container select {
+    width: 150px;
+    flex-shrink: 0;
+}
+
+.search-author-by-parameters-container input {
+    width: 100%;
+}
+
+.search-author-by-parameters-container button {
+    width: 150px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+/* --- Buttons: hover and active --- */
+#get-all-authors-btn:hover,
+.search-author-by-parameters-container button:hover {
+    background-color: var(--dark3);
+}
+
+#get-all-authors-btn:active,
+.search-author-by-parameters-container button:active {
+    background-color: var(--dark4);
+}
+
+/* ------------------------- AUTHORS LIST ------------------------- */
+.authors-list-container {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    border-radius: 8px;
+    background-color: var(--dark2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark4) transparent;
+}
+
+.authors-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.authors-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.authors-list-container::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--dark4);
+}
+
+.authors-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--dark5);
+}
+
+/* ------------------- AUTHOR ------------------- */
+.author-item {
+    display: grid;
+    grid-template-columns: minmax(0, 35%) minmax(120px, 20%) minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--dark3);
+    font-size: 14px;
+}
+
+.author-item:last-child {
+    border-bottom: none;
+}
+
+.author-name {
+    grid-column: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.author-nationality {
+    grid-column: 2;
+    width: 100%;
+    overflow: hidden;
+    color: var(--dark6);
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.author-actions {
+    grid-column: 4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.author-actions button {
+    padding: 5px;
+    width: 33px;
+    height: 33px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.get-author-books-btn {
+    background-color: var(--dark4);
+    font-size: 20px !important;
+    padding-bottom: 10px !important;
+}
+
+.delete-author-btn {
+    background-color: #ef4444;
+}
+
+.get-author-books-btn:hover {
+    background-color: var(--dark5);
+}
+
+.delete-author-btn:hover {
+    background-color: #dc2626;
+}
+
+.author-actions button:active {
+    transform: scale(0.96);
+}
+
+.get-author-books-btn:active {
+    background-color: var(--dark3);
+}
+
+.delete-author-btn:active {
+    background-color: #b91c1c;
+}
+
+/* ------- CREATE AUTHOR SECTION --------*/
+.create-author-section {
+    width: 30%;
+    min-height: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+
+.create-author-title {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 16px 16px 0px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    flex-shrink: 0;
+    background-color: var(--dark2);
+}
+
+.create-author-form {
+    background-color: var(--dark2);
+    display: flex;
+    padding: 16px;
+    flex-shrink: 0;
+    height: 220px;
+    flex-direction: column;
+    gap: 14px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.create-author-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.create-author-label {
+    color: var(--dark6);
+    font-size: 12px;
+}
+
+.create-author-field input,
+.create-author-field select {
+    width: 100%;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    outline: none;
+    background-color: var(--dark3);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.15s;
+}
+
+.create-author-field input:focus,
+.create-author-field select:focus {
+    border-color: var(--dark6);
+}
+
+.create-author-field input::placeholder {
+    color: var(--dark5);
+}
+
+#create-author-btn {
+    width: 100%;
+    height: 36px;
+    margin-top: auto;
+    padding: 0 10px;
+    border: 1px solid var(--dark4);
+    border-radius: 5px;
+    background-color: var(--dark3);
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+#create-author-btn:hover {
+    background-color: var(--dark4);
+}
+
+#create-author-btn:active {
+    background-color: var(--dark2);
+}
+
+/* ---- LIST AUHTORS BOOKS ------*/
+
+.author-books-list {
+    margin-top: 15px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 16px 16px 10px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--dark4);
+    background-color: var(--dark2);
+}
+
+.author-books-list-container {
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background-color: var(--dark2);
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark4) transparent;
+}
+
+.author-books-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.author-books-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.author-books-list-container::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--dark4);
+}
+
+.author-books-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--dark5);
+}
+
+.author-books-empty {
+    padding: 10px 0;
+    color: var(--dark5);
+    font-size: 12px;
+    text-align: center;
+}
+
+.author-book-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--dark3);
+    background-color: var(--dark2);
+    transition: background-color 0.15s;
+}
+
+.author-book-item:last-child {
+    border-bottom: none;
+}
+
+.author-book-item:hover {
+    background-color: var(--dark3);
+}
+
+.author-book-item h4 {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--dark6);
+    font-size: 14px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.author-book-item p {
+    color: var(--dark5);
+    font-size: 12px;
 }

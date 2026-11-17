@@ -11,7 +11,7 @@ function toBook(dto) {
     };
 }
 
-const toBooks = (list) => list.map(toBook);
+export const toBooks = (list) => list.map(toBook);
 
 export async function getAllBooks() {
     return toBooks(await request("/books"));
@@ -27,7 +27,7 @@ export async function searchBooks(type, value) {
         case "book-id":    return [toBook(await request(`/books/${v}`))];
         case "book-isbn":  return [toBook(await request(`/books?isbn=${v}`))];
         case "book-title": return toBooks(await request(`/books/search?text=${v}`));
-        default: throw new Error(`Unknown search type: ${type}`);
+        default: throw new Error(`Unknown search type for books: ${type}`);
     }
 }
 
@@ -41,4 +41,8 @@ export async function createBook({ title, authorId, isbn, year }) {
 
 export async function deleteBook(bookId) {
     await request(`/books/${bookId}`, { method: "DELETE" });
+}
+
+export async function getBooksByAuthor(authorId) {
+    return toBooks(await request(`/books/by-author/${authorId}`));
 }

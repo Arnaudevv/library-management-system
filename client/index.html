@@ -45,32 +45,31 @@
                 </div>
 
                 <div class="search-book-by-parameters-container">
-                    <select name="search-parameter" id="search-parameter">
+                    <select name="search-book-parameter" id="search-book-parameter">
                         <option value="book-id">Id</option>
                         <option value="book-isbn">ISBN</option>
                         <option value="book-title">Title</option>
                     </select>
-                    <input type="text" id="search-input" placeholder="Search by parameter">
+                    <input type="text" id="search-book-input" placeholder="Search by parameter">
                     <button id="search-book-by-paremeters-btn">Search</button>
                 </div>
 
                 <div class="filter-book-by-author-container">
-                    <select id="author-filter">
-                        <option value="">All authors</option>
+                    <select id="book-by-author-filter">
+                        <option value="" disabled selected hidden>All authors</option>
                     </select>
                     <button id="author-filter-btn">Search</button>
                 </div>
 
                 <content class="books-list-container">
-                    <item class="book-item">
+                    <!-- <item class="book-item">
                         <h3 class="book-title">Cien años de soledad</h3>
                         <span class="book-author">Gabriel García Márquez</span>
                         <span class="book-isbn">978-0307474728</span>
                         <span class="book-year">1967</span>
                         <button type="button" class="delete-book-btn" disabled>🗑️</button>
-                    </item>
+                    </item> -->
                 </content>
-                
             </div>
 
             <div class="create-book-section">
@@ -86,7 +85,7 @@
                     <div class="create-book-field">
                         <label class="create-book-label" for="create-book-author">Author</label>
                         <select id="create-book-author" class="author-select">
-                            <option value="">Select an author</option>
+                            <option value="" disabled selected hidden>Select an author</option>
                         </select>
                     </div>
 
@@ -103,7 +102,7 @@
                         <input type="number" id="create-book-year" placeholder="Publication year">
                     </div>
 
-                    <button type="submit" id="create-book-btn">Create book</button>
+                    <button type="button" id="create-book-btn">Create book</button>
                 </form>
             </div>
         </section>
@@ -112,7 +111,65 @@
 
         <!---------- AUTHORS VIEW ---------->
         <section class="authors-view">
+            <div class="authors-query-section">
+                <div class="get-all-authors-container">
+                    <button id="get-all-authors-btn">Get all authors</button>
+                </div>
 
+                <div class="search-author-by-parameters-container">
+                    <select name="search-author-parameter" id="search-author-parameter">
+                        <option value="author-id">Id</option>
+                        <option value="author-name">Name</option>
+                    </select>
+                    <input type="text" id="search-author-input" placeholder="Search by parameter">
+                    <button id="search-author-by-paremeters-btn">Search</button>
+                </div>
+
+                <content class="authors-list-container">
+                    <!-- <item class="author-item">
+                        <h3 class="author-name">Gabriel García Márquez</h3>
+                        <p class="author-nationality">Colombian</p>
+                        <div class="author-actions">
+                            <button type="button" class="get-author-books-btn" disabled>🗑️</button>
+                            <button type="button" class="delete-author-btn" disabled>🗑️</button>
+                        </div>
+                    </item> -->
+                </content>
+            </div>
+
+            <div class="create-author-section">
+                
+                <h3 class="create-author-title">Create author</h3>
+
+                <form class="create-author-form" id="create-author-form">
+
+                    <div class="create-author-field">
+                        <label class="create-author-label" for="create-author-name-input">Name</label>
+                        <input type="text" id="create-author-name-input" placeholder="Author name">
+                    </div>
+
+                    <div class="create-author-field">
+                        <label class="create-author-label" for="create-author-nationality">Nationality</label>
+                        <select id="create-author-nationality">
+                            <option value="" disabled selected hidden>Select a nationality</option>
+                            <option value="British">United Kingdom</option>
+                            <option value="American">United States</option>
+                            <option value="Spanish">Spain</option>
+                            <option value="French">France</option>
+                            <option value="Italian">Italy</option>
+                            <option value="German">Germany</option>
+                            <option value="Japanese">Japan</option>
+                            <option value="Canadian">Canada</option>
+                            <option value="Indian">India</option>
+                            <option value="Australian">Australia</option>
+                        </select>
+                    </div>
+
+                    <button type="button" id="create-author-btn">Create author</button>
+                </form>
+
+                <h3 class="author-books-list">Author's books</h3>
+                <content class="author-books-list-container"></content>
         </section>
 
 
@@ -123,6 +180,7 @@
 
     <script src="js/index.js"></script>
     <script type="module" src="js/views/books.js"></script>
+    <script type="module" src="js/views/authors.js"></script>
 </body>
 
 </html>

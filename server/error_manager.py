@@ -55,6 +55,7 @@ class ErrorManager:
             f"exposed_to_client={is_public} "
             f"public_message={public_message!r} "
             f"private_details={private_details!r}"
+            f"\n"
         )
 
         if not is_public:
