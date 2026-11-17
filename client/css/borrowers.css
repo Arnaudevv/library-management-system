@@ -377,3 +377,10 @@
     color: var(--dark5);
     font-size: 12px;
 }
+
+.borrower-loans-empty {
+    padding: 10px 16px;
+    color: var(--dark5);
+    font-size: 12px;
+    text-align: center;
+}

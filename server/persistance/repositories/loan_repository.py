@@ -16,17 +16,49 @@ class LoanRepository(BaseRepository[Loan]):
     def __init__(self, session: Session) -> None:
         super().__init__(session, Loan)
 
+    def get_by_id(self, loan_id: int) -> Optional[Loan]:
+        statement = (
+            select(Loan)
+            .options(joinedload(Loan.book), joinedload(Loan.borrower))
+            .where(Loan.id == loan_id)
+        )
+        return self.session.scalar(statement)
+
+    def get_all(self) -> list[Loan]:
+        statement = select(Loan).options(joinedload(Loan.book), joinedload(Loan.borrower))
+        return list(self.session.scalars(statement).all())
+
     def get_by_book(self, book_id: int) -> list[Loan]:
-        return list(self.session.scalars(select(Loan).where(Loan.book_id == book_id)).all())
+        statement = (
+            select(Loan)
+            .options(joinedload(Loan.book), joinedload(Loan.borrower))
+            .where(Loan.book_id == book_id)
+        )
+        return list(self.session.scalars(statement).all())
 
     def get_by_borrower(self, borrower_id: int) -> list[Loan]:
-        return list(self.session.scalars(select(Loan).where(Loan.borrower_id == borrower_id)).all())
+        statement = (
+            select(Loan)
+            .options(joinedload(Loan.book), joinedload(Loan.borrower))
+            .where(Loan.borrower_id == borrower_id)
+        )
+        return list(self.session.scalars(statement).all())
 
     def get_active(self) -> list[Loan]:
-        return list(self.session.scalars(select(Loan).where(Loan.return_date.is_(None))).all())
+        statement = (
+            select(Loan)
+            .options(joinedload(Loan.book), joinedload(Loan.borrower))
+            .where(Loan.return_date.is_(None))
+        )
+        return list(self.session.scalars(statement).all())
 
     def get_history(self) -> list[Loan]:
-        return list(self.session.scalars(select(Loan).where(Loan.return_date.is_not(None))).all())
+        statement = (
+            select(Loan)
+            .options(joinedload(Loan.book), joinedload(Loan.borrower))
+            .where(Loan.return_date.is_not(None))
+        )
+        return list(self.session.scalars(statement).all())
 
     def get_all_with_relations(self) -> list[Loan]:
         statement = select(Loan).options(joinedload(Loan.book), joinedload(Loan.borrower))

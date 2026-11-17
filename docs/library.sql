@@ -24,6 +24,7 @@ CREATE TABLE loan (
     book_id INT NOT NULL,
     borrower_id INT NOT NULL,
     loan_date DATE NOT NULL DEFAULT (CURRENT_DATE),
+    due_date DATE,
     return_date DATE,
     FOREIGN KEY (book_id) REFERENCES book(id) ON DELETE CASCADE,
     FOREIGN KEY (borrower_id) REFERENCES borrower(id) ON DELETE CASCADE

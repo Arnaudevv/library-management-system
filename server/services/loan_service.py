@@ -54,12 +54,14 @@ class LoanService:
         with self.uow_factory.create() as uow:
             book_repository = BookRepository(uow.session)
             borrower_repository = BorrowerRepository(uow.session)
-            if book_repository.get_by_id(loan.book_id) is None:
+            book = book_repository.get_by_id(loan.book_id)
+            if book is None:
                 raise ResourceNotFoundError(
                     code="book_not_found",
                     message="The book does not exist.",
                 )
-            if borrower_repository.get_by_id(loan.borrower_id) is None:
+            borrower = borrower_repository.get_by_id(loan.borrower_id)
+            if borrower is None:
                 raise ResourceNotFoundError(
                     code="borrower_not_found",
                     message="The borrower does not exist.",
@@ -74,15 +76,31 @@ class LoanService:
                     message="The book already has an active loan.",
                 )
             entity = Loan(
-                book_id=loan.book_id,
-                borrower_id=loan.borrower_id,
-                return_date=loan.return_date,
+                book=book,
+                borrower=borrower,
+                due_date=loan.due_date,
             )
-            if loan.loan_date is not None:
-                entity.loan_date = loan.loan_date
             saved = loan_repository.save(entity)
             uow.session.flush()
             return saved
+
+    def return_loan(self, loan_id: int) -> Loan:
+        with self.uow_factory.create() as uow:
+            repository = LoanRepository(uow.session)
+            loan = repository.get_by_id(loan_id)
+            if loan is None:
+                raise ResourceNotFoundError(
+                    code="loan_not_found",
+                    message="The loan does not exist.",
+                )
+            if loan.return_date is not None:
+                raise ConflictError(
+                    code="loan_already_returned",
+                    message="The loan has already been returned.",
+                )
+            loan.return_date = dt.date.today()
+            uow.session.flush()
+            return loan
 
     def delete(self, loan_id: int) -> bool:
         with self.uow_factory.create() as uow:

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, Session
 from ...protocol.errors import ConflictError, DatabaseError, DatabaseUnavailableError
@@ -58,11 +58,19 @@ class UnitOfWorkFactory:
 
     def __init__(self, database_url: str):
         self.engine = create_engine(database_url)
+        if database_url.startswith("sqlite"):
+            event.listen(self.engine, "connect", self._enable_sqlite_foreign_keys)
         self.session_factory = sessionmaker(
             bind=self.engine,
             autoflush=True,
             expire_on_commit=False,
         )
+
+    @staticmethod
+    def _enable_sqlite_foreign_keys(dbapi_connection, _connection_record) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
     def create(self) -> SqlAlchemyUnitOfWork:
         return SqlAlchemyUnitOfWork(self.session_factory())

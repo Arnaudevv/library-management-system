@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+import datetime as dt
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 
 from server.error_manager import ErrorManager
 from server.persistance.database import Base
@@ -13,6 +14,8 @@ from server.persistance.models.author import Author
 from server.persistance.models.book import Book
 from server.persistance.models.borrower import Borrower
 from server.persistance.models.loan import Loan
+from server.persistance.migrations import migrate_loan_due_date
+from server.controllers.loan_controller import LoanController
 from server.protocol.errors import (
     ConflictError,
     MethodNotAllowedError,
@@ -98,7 +101,11 @@ def create_loan(router: Router, book_id: int, borrower_id: int) -> object:
         request(
             "POST",
             "/loans",
-            {"book_id": book_id, "borrower_id": borrower_id},
+            {
+                "book_id": book_id,
+                "borrower_id": borrower_id,
+                "due_date": (dt.date.today() + dt.timedelta(days=14)).isoformat(),
+            },
             json_body=True,
         )
     )
@@ -167,6 +174,76 @@ def test_loan_create_active_history_and_relations(router: Router) -> None:
     assert router.handle(request("GET", f"/loans/{loan.id}/relations")) == loan
     assert router.handle(request("GET", f"/loans/by-book/{book.id}")) == [loan]
     assert router.handle(request("GET", f"/loans/by-borrower/{borrower.id}")) == [loan]
+    assert router.handle(request("GET", "/loans")) == [loan]
+    assert loan.book_title == book.title
+    assert loan.borrower_name == borrower.name
+    assert loan.loan_date == dt.date.today()
+    assert loan.due_date == dt.date.today() + dt.timedelta(days=14)
+
+
+def test_loan_return_moves_loan_to_history(router: Router) -> None:
+    author = create_author(router)
+    book = create_book(router, author.id)
+    borrower = create_borrower(router)
+    loan = create_loan(router, book.id, borrower.id)
+
+    returned_loan = router.handle(request("POST", f"/loans/{loan.id}/return"))
+
+    assert returned_loan.id == loan.id
+    assert returned_loan.return_date == dt.date.today()
+    assert router.handle(request("GET", "/loans/active")) == []
+    assert router.handle(request("GET", "/loans/history")) == [returned_loan]
+
+    with pytest.raises(ConflictError, match="already been returned"):
+        router.handle(request("POST", f"/loans/{loan.id}/return"))
+
+
+def test_loan_create_requires_due_date(router: Router) -> None:
+    author = create_author(router)
+    book = create_book(router, author.id)
+    borrower = create_borrower(router)
+
+    with pytest.raises(ValidationError, match="due_date is required"):
+        router.handle(
+            request(
+                "POST",
+                "/loans",
+                {"book_id": book.id, "borrower_id": borrower.id},
+                json_body=True,
+            )
+        )
+
+
+def test_loan_due_date_migration_is_idempotent(tmp_path) -> None:
+    engine = create_engine(f"sqlite:///{tmp_path / 'old-loan-schema.db'}")
+    try:
+        with engine.begin() as connection:
+            connection.exec_driver_sql(
+                "CREATE TABLE loan (id INTEGER PRIMARY KEY, return_date DATE)"
+            )
+
+        migrate_loan_due_date(engine)
+        migrate_loan_due_date(engine)
+
+        columns = {column["name"] for column in inspect(engine).get_columns("loan")}
+        assert "due_date" in columns
+    finally:
+        engine.dispose()
+
+
+def test_loan_dto_handles_missing_legacy_relations() -> None:
+    loan = Loan(
+        id=1,
+        book_id=999,
+        borrower_id=1,
+        loan_date=dt.date.today(),
+        borrower=Borrower(id=1, name="Ada Lovelace", email="ada@example.com"),
+    )
+
+    dto = LoanController._to_dto(loan)
+
+    assert dto.book_title is None
+    assert dto.borrower_name == "Ada Lovelace"
 
 
 def test_loan_duplicate_active_book_is_rejected(router: Router) -> None:

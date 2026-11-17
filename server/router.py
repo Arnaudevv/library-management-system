@@ -8,6 +8,7 @@ from .controllers.book_controller import BookController
 from .controllers.borrower_controller import BorrowerController
 from .controllers.loan_controller import LoanController
 from .persistance.config import DATABASE_URL
+from .persistance.migrations import migrate_loan_due_date
 from .persistance.repositories.unit_of_work import UnitOfWorkFactory
 from .protocol.request_reader import Request
 from .protocol.errors import (
@@ -45,6 +46,7 @@ class Router:
     def create_default(cls) -> Router:
         """Create the application dependencies and register its routes."""
         factory = UnitOfWorkFactory(DATABASE_URL)
+        migrate_loan_due_date(factory.engine)
         authors = AuthorController(AuthorService(factory))
         books = BookController(BookService(factory))
         borrowers = BorrowerController(BorrowerService(factory))
@@ -83,6 +85,8 @@ class Router:
                 cls._route("GET", "/borrowers/{borrower_id}", lambda _, params: borrowers.get_by_id(params["borrower_id"]), {"borrower_id": int}),
                 cls._route("DELETE", "/borrowers/{borrower_id}", lambda _, params: borrowers.delete(params["borrower_id"]), {"borrower_id": int}),
                 cls._route("POST", "/loans", lambda request, _: loans.create(cls._json_body(request))),
+                cls._route("POST", "/loans/{loan_id}/return", lambda _, params: loans.return_loan(params["loan_id"]), {"loan_id": int}),
+                cls._route("GET", "/loans", lambda _request, _params: loans.get_all()),
                 cls._route("GET", "/loans/active", lambda _request, _params: loans.get_active()),
                 cls._route("GET", "/loans/history", lambda _request, _params: loans.get_history()),
                 cls._route("GET", "/loans/with-relations", lambda _request, _params: loans.get_all_with_relations()),

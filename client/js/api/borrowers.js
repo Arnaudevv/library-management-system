@@ -10,18 +10,6 @@ function toBorrower(dto) {
 
 const toBorrowers = (list) => list.map(toBorrower);
 
-// function toLoan(dto) {
-//     return {
-//         id: dto.id,
-//         bookId: dto.book_id,
-//         borrowerId: dto.borrower_id,
-//         loanDate: dto.loan_date,
-//         returnDate: dto.return_date,
-//     };
-// }
-
-// const toLoans = (list) => list.map(toLoan);
-
 export async function getAllBorrowers() {
     return toBorrowers(await request("/borrowers"));
 }
@@ -49,8 +37,3 @@ export async function createBorrower({ name, email }) {
 export async function deleteBorrower(borrowerId) {
     await request(`/borrowers/${encodeURIComponent(borrowerId)}`, { method: "DELETE" });
 }
-
-// export async function getBorrowerLoans(borrowerId) {
-//     const encodedId = encodeURIComponent(borrowerId);
-//     return toLoans(await request(`/loans/by-borrower/${encodedId}`));
-// }

@@ -38,6 +38,7 @@ DELETE /borrowers/{borrower_id} HTTP/1.1
 POST /loans HTTP/1.1
 GET /loans HTTP/1.1
 GET /loans/{loan_id} HTTP/1.1
+POST /loans/{loan_id}/return HTTP/1.1
 GET /books/{book_id}/loans HTTP/1.1
 GET /borrowers/{borrower_id}/loans HTTP/1.1
 GET /loans/active HTTP/1.1

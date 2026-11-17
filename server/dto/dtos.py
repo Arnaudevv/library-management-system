@@ -42,5 +42,8 @@ class LoanDTO:
     book_id: int
     borrower_id: int
     loan_date: Optional[dt.date] = None
+    due_date: Optional[dt.date] = None
     return_date: Optional[dt.date] = None
+    book_title: Optional[str] = None
+    borrower_name: Optional[str] = None
     id: Optional[int] = None

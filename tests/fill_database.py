@@ -9,6 +9,7 @@ from server.persistance.models.author import Author
 from server.persistance.models.book import Book
 from server.persistance.models.borrower import Borrower
 from server.persistance.models.loan import Loan
+from server.persistance.migrations import migrate_loan_due_date
 
 
 AUTHORS = (
@@ -49,6 +50,7 @@ LOANS = (
 
 def fill_database() -> None:
     """Create the schema and insert sample library data if it is missing."""
+    migrate_loan_due_date(engine)
     Base.metadata.create_all(engine)
 
     with Session.begin() as session:

@@ -49,6 +49,10 @@ class LoanController:
         self._validate_id(loan_id)
         return self._to_dto(self.service.get_with_relations(loan_id))
 
+    def return_loan(self, loan_id: int) -> LoanDTO:
+        self._validate_id(loan_id)
+        return self._to_dto(self.service.return_loan(loan_id))
+
     def delete(self, loan_id: int) -> bool:
         self._validate_id(loan_id)
         if not self.service.delete(loan_id):
@@ -66,15 +70,18 @@ class LoanController:
             raise ValidationError(code="invalid_request_body", message="Request body must be a JSON object.")
         book_id = body.get("book_id")
         borrower_id = body.get("borrower_id")
-        loan_date = cls._parse_date(body.get("loan_date"), "loan_date")
-        return_date = cls._parse_date(body.get("return_date"), "return_date")
+        due_date = cls._parse_date(body.get("due_date"), "due_date")
         cls._validate_id(book_id, "book_id")
         cls._validate_id(borrower_id, "borrower_id")
+        if due_date is None:
+            raise ValidationError(
+                code="missing_due_date",
+                message="due_date is required.",
+            )
         return LoanDTO(
             book_id=book_id,
             borrower_id=borrower_id,
-            loan_date=loan_date,
-            return_date=return_date,
+            due_date=due_date,
         )
 
     @staticmethod
@@ -86,7 +93,10 @@ class LoanController:
             book_id=loan.book_id,
             borrower_id=loan.borrower_id,
             loan_date=loan.loan_date,
+            due_date=loan.due_date,
             return_date=loan.return_date,
+            book_title=loan.book.title if loan.book is not None else None,
+            borrower_name=loan.borrower.name if loan.borrower is not None else None,
         )
 
     @staticmethod

@@ -222,23 +222,55 @@
                 </form>
 
                 <h3 class="borrower-loans-list">Borrower's loans</h3>
-                <content class="borrower-loans-list-container">
-                    <!--
-                    <div class="borrower-loan-item">
-                        <h4>1984</h4>
-                        <p>Loan date: 2026-01-10 · Return date: Not returned</p>
-                    </div>
-                    -->
-                </content>
+                <content class="borrower-loans-list-container"></content>
             </div>
         </section>
-        <section class="loans-view">loans</section>
+        <section class="loans-view">
+            <div class="loans-query-section">
+                <div class="loan-filter-buttons">
+                    <button type="button" class="loan-filter-btn active" data-loan-filter="all">All loans</button>
+                    <button type="button" class="loan-filter-btn" data-loan-filter="active">Active loans</button>
+                    <button type="button" class="loan-filter-btn" data-loan-filter="returned">Returned loans</button>
+                </div>
+
+                <content class="loans-list-container"></content>
+            </div>
+
+            <div class="create-loan-section">
+                <h3 class="create-loan-title">Loan a book</h3>
+
+                <form class="create-loan-form" id="create-loan-form">
+                    <div class="create-loan-field">
+                        <label class="create-loan-label" for="loan-book-select">Book</label>
+                        <select id="loan-book-select" required>
+                            <option value="" disabled selected>Select a book</option>
+                        </select>
+                    </div>
+
+                    <div class="create-loan-field">
+                        <label class="create-loan-label" for="loan-borrower-select">Borrower</label>
+                        <select id="loan-borrower-select" required>
+                            <option value="" disabled selected>Select a borrower</option>
+                        </select>
+                    </div>
+
+                    <div class="create-loan-field">
+                        <label class="create-loan-label" for="loan-due-date">Due date</label>
+                        <input type="date" id="loan-due-date" required>
+                    </div>
+
+                    <p class="loan-date-note">The loan start date is set automatically.</p>
+                    <button type="button" id="create-loan-btn">Loan book</button>
+                </form>
+            </div>
+        </section>
     </main>
 
     <script src="js/index.js"></script>
     <script type="module" src="js/views/books.js"></script>
     <script type="module" src="js/views/authors.js"></script>
     <script type="module" src="js/views/borrowers.js"></script>
+    <script type="module" src="js/views/loans.js"></script>
 </body>
 
 </html>

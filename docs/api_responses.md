@@ -407,29 +407,45 @@ true
 
 ## Loan
 
-Un préstamo se devuelve así:
+Un loan incluye sus IDs, el nombre del borrower, el título del libro, la fecha de inicio, la fecha prevista de devolución y, si ya se devolvió, la fecha real de devolución.
 
 ```json
 {
   "book_id": 1,
   "borrower_id": 1,
+  "book_title": "Animal Farm",
+  "borrower_name": "Ada Lovelace",
   "loan_date": "2026-11-14",
+  "due_date": "2026-11-28",
   "return_date": null,
   "id": 1
 }
 ```
 
-`return_date` es `null` mientras el préstamo siga activo.
+`loan_date` se establece en el backend al crear el loan. `return_date` es `null` hasta que se devuelve el libro; `due_date` representa la fecha prevista y no cierra el loan.
 
 ### `POST /loans`
 
-Devuelve el préstamo creado:
+El cuerpo requiere `book_id`, `borrower_id` y `due_date`:
 
 ```json
 {
   "book_id": 1,
   "borrower_id": 1,
+  "due_date": "2026-11-28"
+}
+```
+
+Devuelve el loan creado:
+
+```json
+{
+  "book_id": 1,
+  "borrower_id": 1,
+  "book_title": "Animal Farm",
+  "borrower_name": "Ada Lovelace",
   "loan_date": "2026-11-14",
+  "due_date": "2026-11-28",
   "return_date": null,
   "id": 1
 }
@@ -437,14 +453,17 @@ Devuelve el préstamo creado:
 
 ### `GET /loans`
 
-Devuelve una lista:
+Devuelve todos los loans, con sus datos de libro y borrower:
 
 ```json
 [
   {
     "book_id": 1,
     "borrower_id": 1,
+    "book_title": "Animal Farm",
+    "borrower_name": "Ada Lovelace",
     "loan_date": "2026-11-14",
+    "due_date": "2026-11-28",
     "return_date": null,
     "id": 1
   }
@@ -459,7 +478,10 @@ Devuelve un préstamo:
 {
   "book_id": 1,
   "borrower_id": 1,
+  "book_title": "Animal Farm",
+  "borrower_name": "Ada Lovelace",
   "loan_date": "2026-11-14",
+  "due_date": "2026-11-28",
   "return_date": null,
   "id": 1
 }
@@ -474,7 +496,10 @@ Devuelve una lista de préstamos:
   {
     "book_id": 1,
     "borrower_id": 1,
+    "book_title": "Animal Farm",
+    "borrower_name": "Ada Lovelace",
     "loan_date": "2026-11-14",
+    "due_date": "2026-11-28",
     "return_date": null,
     "id": 1
   }
@@ -490,7 +515,10 @@ Devuelve una lista de préstamos:
   {
     "book_id": 1,
     "borrower_id": 1,
+    "book_title": "Animal Farm",
+    "borrower_name": "Ada Lovelace",
     "loan_date": "2026-11-14",
+    "due_date": "2026-11-28",
     "return_date": null,
     "id": 1
   }
@@ -506,7 +534,10 @@ Devuelve una lista de préstamos cuyo `return_date` es `null`:
   {
     "book_id": 1,
     "borrower_id": 1,
+    "book_title": "Animal Farm",
+    "borrower_name": "Ada Lovelace",
     "loan_date": "2026-11-14",
+    "due_date": "2026-11-28",
     "return_date": null,
     "id": 1
   }
@@ -522,23 +553,46 @@ Devuelve una lista de préstamos cuyo `return_date` no es `null`:
   {
     "book_id": 1,
     "borrower_id": 1,
+    "book_title": "Animal Farm",
+    "borrower_name": "Ada Lovelace",
     "loan_date": "2026-11-01",
+    "due_date": "2026-11-14",
     "return_date": "2026-11-14",
     "id": 1
   }
 ]
 ```
 
+### `POST /loans/{loan_id}/return`
+
+Registra la fecha real de devolución en el backend y devuelve el loan actualizado:
+
+```json
+{
+  "book_id": 1,
+  "borrower_id": 1,
+  "book_title": "Animal Farm",
+  "borrower_name": "Ada Lovelace",
+  "loan_date": "2026-11-14",
+  "due_date": "2026-11-28",
+  "return_date": "2026-11-20",
+  "id": 1
+}
+```
+
 ### `GET /loans/with-relations`
 
-Devuelve una lista de préstamos con el mismo formato plano. Actualmente no incluye los objetos `book` ni `borrower`:
+Devuelve una lista de loans con el mismo formato plano:
 
 ```json
 [
   {
     "book_id": 1,
     "borrower_id": 1,
+    "book_title": "Animal Farm",
+    "borrower_name": "Ada Lovelace",
     "loan_date": "2026-11-14",
+    "due_date": "2026-11-28",
     "return_date": null,
     "id": 1
   }
@@ -547,13 +601,16 @@ Devuelve una lista de préstamos con el mismo formato plano. Actualmente no incl
 
 ### `GET /loans/{loan_id}/relations`
 
-Devuelve un préstamo con el mismo formato plano. Actualmente no incluye los objetos `book` ni `borrower`:
+Devuelve un loan con el mismo formato plano:
 
 ```json
 {
   "book_id": 1,
   "borrower_id": 1,
+  "book_title": "Animal Farm",
+  "borrower_name": "Ada Lovelace",
   "loan_date": "2026-11-14",
+  "due_date": "2026-11-28",
   "return_date": null,
   "id": 1
 }

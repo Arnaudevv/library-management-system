@@ -26,6 +26,7 @@ class Loan(Base):
     loan_date: Mapped[dt.date] = mapped_column(
         Date, nullable=False, server_default=text("(CURRENT_DATE)")
     )
+    due_date: Mapped[Optional[dt.date]] = mapped_column(Date)
     return_date: Mapped[Optional[dt.date]] = mapped_column(Date)
 
     book: Mapped["Book"] = relationship(back_populates="loans")

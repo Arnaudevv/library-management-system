@@ -51,7 +51,7 @@ Available in all four repositories.
 
 ## Loan
 
-`return_date` is optional (null = still active). FKs to `book` and `borrower`.
+`due_date` is the planned return date. `return_date` is null until a loan is returned. FKs to `book` and `borrower`.
 
 | Method | Description | Rule |
 |---|---|---|
@@ -62,7 +62,7 @@ Available in all four repositories.
 | `get_active_by_borrower(borrower_id)` | Unreturned loans of a borrower | 6 |
 | `get_all_with_details()` | Loan list with book and borrower loaded | 7 |
 
-Returning a book needs no method: set `return_date` and call `save`.
+Returning a book sets `return_date` to the current date through the loan service.
 
 ## Rules Reference
 
@@ -78,6 +78,6 @@ Returning a book needs no method: set `return_date` and call `save`.
 
 ## Notes
 
-1. **Cascades depend on SQLite settings.** The models use `ondelete="CASCADE"` with `passive_deletes=True`, so the database handles child deletion. SQLite does not enforce foreign keys by default; `PRAGMA foreign_keys=ON` is required on the engine.
+1. **Cascades depend on SQLite settings.** The models use `ondelete="CASCADE"` with `passive_deletes=True`, so the database handles child deletion. `UnitOfWorkFactory` enables `PRAGMA foreign_keys=ON` for SQLite connections; other engine instances must do likewise.
 2. **Nothing prevents two active loans for the same book.** "Book already loaned" is a service-layer rule. A partial unique index on `book_id` where `return_date IS NULL` would let the database enforce it. This is also the race condition to demo in the multi-client step.
 3. **`Loan` is not a pure N:M table.** It has its own id and dates, so the same borrower can borrow the same book several times. `get_by_book` returns a history, not a single link.

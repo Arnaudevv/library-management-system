@@ -145,6 +145,11 @@ def test_unique_constraints_raise_on_flush(factory: UnitOfWorkFactory) -> None:
         uow.session.close()
 
 
+def test_sqlite_foreign_keys_are_enabled(factory: UnitOfWorkFactory) -> None:
+    with factory.create() as uow:
+        assert uow.session.connection().exec_driver_sql("PRAGMA foreign_keys").scalar() == 1
+
+
 def test_cascade_deletes_books_when_author_is_deleted(factory: UnitOfWorkFactory) -> None:
     with factory.create() as uow:
         author = AuthorRepository(uow.session).save(Author(name="Parent"))

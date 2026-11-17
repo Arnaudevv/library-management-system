@@ -1,7 +1,10 @@
 import * as borrowersApi from "../api/borrowers.js";
+import * as loansApi from "../api/loans.js";
 
 // --------------------- QUERY MANAGER ----------------------
 // The 4 query buttons share the same try/catch and the same render
+let selectedBorrowerId = null;
+
 async function runQuery(queryFn) {
     try {
         renderBorrowers(await queryFn());
@@ -33,7 +36,22 @@ async function manageCreateBorrower() {
         console.error("Failed to create borrower:", error);
     }
 }
-manageGetAllBorrowers()
+
+async function manageGetBorrowerLoans(borrowerId, borrowerName) {
+    selectedBorrowerId = borrowerId;
+    document.querySelector(".borrower-loans-list").textContent = `${borrowerName}'s loans`;
+    document.querySelector(".borrower-loans-list-container").replaceChildren();
+
+    try {
+        const loans = await loansApi.getBorrowerLoans(borrowerId);
+        if (selectedBorrowerId !== borrowerId) return;
+        renderBorrowerLoans(loans);
+    } catch (error) {
+        console.error("Failed to load borrower's loans:", error);
+    }
+}
+
+manageGetAllBorrowers();
 /* ----------------------------------------------------------------------------------- */
 
 /* ------------------------------------ VIEW ACTIONS & DOM ------------------------------------ */
@@ -56,17 +74,56 @@ function renderBorrowers(borrowers) {
         const actions = document.createElement("div");
         actions.className = "borrower-actions";
 
+        const loansButton = document.createElement("button");
+        loansButton.type = "button";
+        loansButton.className = "get-borrower-loans-btn";
+        loansButton.textContent = "🔖";
+        loansButton.setAttribute("aria-label", `Show ${borrower.name}'s loans`);
+
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.className = "delete-borrower-btn";
         deleteButton.textContent = "🗑️";
 
-        actions.append(deleteButton);
+        actions.append(loansButton, deleteButton);
         item.append(name, email, actions);
         return item;
     });
 
     list.replaceChildren(...items);
+}
+
+function renderBorrowerLoans(loans) {
+    const container = document.querySelector(".borrower-loans-list-container");
+    if (loans.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "borrower-loans-empty";
+        emptyMessage.textContent = "This borrower has no loans.";
+        container.replaceChildren(emptyMessage);
+        return;
+    }
+
+    const items = loans.map((loan) => {
+        const item = document.createElement("div");
+        item.className = "borrower-loan-item";
+        item.dataset.loanId = loan.id;
+        item.dataset.bookId = loan.bookId;
+
+        const title = document.createElement("h4");
+        title.textContent = loan.bookTitle ?? "Unknown book";
+
+        const details = document.createElement("p");
+        details.textContent = [
+            `Loan date: ${loan.loanDate ?? "-"}`,
+            `Due date: ${loan.dueDate ?? "-"}`,
+            `Return date: ${loan.returnDate ?? "Not returned"}`,
+        ].join(" · ");
+
+        item.append(title, details);
+        return item;
+    });
+
+    container.replaceChildren(...items);
 }
 
 function getCreateBorrowerData() {
@@ -101,6 +158,20 @@ document.getElementById("create-borrower-btn")
 
 // ----- DELETE BORROWER
 document.querySelector(".borrowers-list-container").addEventListener("click", async (event) => {
+    const loansButton = event.target.closest(".get-borrower-loans-btn");
+    if (loansButton) {
+        const borrowerItem = loansButton.closest(".borrower-item");
+        const borrowerId = Number(borrowerItem?.dataset.borrowerId);
+        const borrowerName = borrowerItem?.querySelector(".borrower-name")?.textContent.trim();
+        if (!Number.isInteger(borrowerId) || borrowerId <= 0 || !borrowerName) {
+            console.error("Cannot load loans: invalid borrower information.");
+            return;
+        }
+
+        manageGetBorrowerLoans(borrowerId, borrowerName);
+        return;
+    }
+
     const button = event.target.closest(".delete-borrower-btn");
     if (!button) return;
 
@@ -114,6 +185,11 @@ document.querySelector(".borrowers-list-container").addEventListener("click", as
     try {
         await borrowersApi.deleteBorrower(borrowerId);
         borrowerItem.remove();
+        if (borrowerId === selectedBorrowerId) {
+            selectedBorrowerId = null;
+            document.querySelector(".borrower-loans-list").textContent = "Borrower's loans";
+            document.querySelector(".borrower-loans-list-container").replaceChildren();
+        }
     } catch (error) {
         console.error("Failed to delete borrower:", error);
     }
