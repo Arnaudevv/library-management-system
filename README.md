@@ -81,3 +81,7 @@ only a quick introduction and setup guide.
 - [Repository queries and persistence notes](docs/repository_queries.md)
 - [Async server architecture](docs/async_server.md) documents the later
   concurrency refactor, not the synchronous version described in this README.
+- [Secure communication setup](docs/SECURITY.md) documents the TLS and digest
+  layer for the asyncio server.
+
+password: generate-certs

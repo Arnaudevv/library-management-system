@@ -35,6 +35,8 @@ class Response:
 
 def build_response(response: Response) -> bytes:
     """Serialize a Response into an HTTP/1.1 response as UTF-8 bytes."""
+    from server.security.digest import DIGEST_HEADER, compute_digest
+
     status = _validate_status(response.status)
     headers = _validate_headers(response.headers or {})
 
@@ -44,6 +46,7 @@ def build_response(response: Response) -> bytes:
     body = b"" if response.body is None else _serialize_body(response.body)
     if body and "content-type" not in headers:
         headers["content-type"] = "application/json; charset=utf-8"
+    headers[DIGEST_HEADER] = compute_digest(body)
     headers["content-length"] = str(len(body))
     headers.setdefault("connection", "close")
 

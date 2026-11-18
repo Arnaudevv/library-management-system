@@ -32,3 +32,8 @@ Thumbs.db
 
 # Local SQLite database
 data/*.db
+
+# Local TLS certificates and private keys
+certs/
+*.key.pem
+*.p12

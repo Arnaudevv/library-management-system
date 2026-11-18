@@ -20,6 +20,7 @@ class Request:
     query: dict[str, str] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     body: Any | None = None
+    raw_body: bytes = b""
 
 
 async def read_request(reader: asyncio.StreamReader) -> Request:
@@ -64,6 +65,7 @@ async def read_request(reader: asyncio.StreamReader) -> Request:
         },
         headers=headers,
         body=parsed_body,
+        raw_body=body,
     )
 
 

@@ -7,6 +7,7 @@ import pytest
 import server.connection as connection_module
 from server.protocol.errors import HeadersTooLargeError
 from server.protocol.request_reader import MAX_HEADER_SIZE, Request, read_request
+from server.security.digest import compute_digest
 
 
 def test_read_request_parses_streamed_json_request() -> None:
@@ -67,7 +68,9 @@ def test_server_handles_multiple_open_connections(monkeypatch, capsys) -> None:
             async def connect_with_partial_headers(path: str):
                 reader, writer = await asyncio.open_connection(host, port)
                 writer.write(
-                    f"GET {path} HTTP/1.1\r\nHost: localhost\r\n".encode()
+                    f"GET {path} HTTP/1.1\r\n"
+                    f"Host: localhost\r\n"
+                    f"X-Content-Digest: {compute_digest(b'')}\r\n".encode()
                 )
                 await writer.drain()
                 return reader, writer

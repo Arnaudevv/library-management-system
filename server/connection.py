@@ -9,6 +9,8 @@ from server.error_manager import ErrorManager
 from server.protocol.request_reader import MAX_HEADER_SIZE, Request, read_request
 from server.protocol.response_builder import Response, StatusCode, build_response
 from server.router import Router
+from server.security.digest import verify_digest
+from server.security.tls import build_server_ssl_context
 from server.settings import HOST, PORT
 from server.static_files import serve_static
 
@@ -19,7 +21,10 @@ request_ids = count(1)
 router: Router | None = None
 
 
-async def handle_connection( reader: asyncio.StreamReader, writer: asyncio.StreamWriter ) -> None:
+async def handle_connection(
+    reader: asyncio.StreamReader,
+    writer: asyncio.StreamWriter,
+) -> None:
     """Handle one client request and close its connection gracefully."""
     global active_connections
 
@@ -30,6 +35,7 @@ async def handle_connection( reader: asyncio.StreamReader, writer: asyncio.Strea
     local_address = _format_address(writer.get_extra_info("sockname"))
 
     try:
+        _log_client_identity(writer, request_id)
         request: Request = await read_request(reader)
 
         print(
@@ -41,6 +47,10 @@ async def handle_connection( reader: asyncio.StreamReader, writer: asyncio.Strea
 
         response = serve_static(request.path, request.method)
         if response is None:
+            verify_digest(
+                request.raw_body,
+                request.headers.get("x-content-digest"),
+            )
             if router is None:
                 raise RuntimeError("The application router has not been initialized.")
             response = Response(status=StatusCode.OK, body=router.handle(request))
@@ -103,6 +113,7 @@ async def socket_listener() -> None:
     """Accept and handle client connections using asyncio streams."""
     global router
 
+    ssl_context = build_server_ssl_context()
     router = Router.create_default()
     server = await asyncio.start_server(
         handle_connection,
@@ -110,10 +121,12 @@ async def socket_listener() -> None:
         PORT,
         backlog=LISTEN_BACKLOG,
         limit=MAX_HEADER_SIZE + 4,
+        ssl=ssl_context,
+        ssl_handshake_timeout=10,
     )
 
     print(
-        f"🚀 Server is running at http://{HOST}:{PORT}. "
+        f"🚀 Secure server is running at https://{HOST}:{PORT}. "
         "Open this URL in your web browser to connect a client.",
         flush=True,
     )
@@ -127,3 +140,28 @@ def _format_address(address: Any) -> str:
     if isinstance(address, tuple) and len(address) >= 2:
         return f"{address[0]}:{address[1]}"
     return str(address)
+
+
+def _log_client_identity(
+    writer: asyncio.StreamWriter,
+    request_id: int,
+) -> None:
+    peer_certificate = writer.get_extra_info("peercert") or {}
+    tls_connection = writer.get_extra_info("ssl_object")
+    client_name = _certificate_common_name(peer_certificate)
+    tls_version = tls_connection.version() if tls_connection else "unknown"
+    cipher = tls_connection.cipher() if tls_connection else None
+    cipher_name = cipher[0] if cipher else "unknown"
+    print(
+        f"[AUTH] request_id={request_id} client={client_name} "
+        f"tls={tls_version} cipher={cipher_name}",
+        flush=True,
+    )
+
+
+def _certificate_common_name(certificate: dict[str, Any]) -> str:
+    for relative_distinguished_name in certificate.get("subject", ()):
+        for attribute, value in relative_distinguished_name:
+            if attribute == "commonName":
+                return value
+    return "unknown"

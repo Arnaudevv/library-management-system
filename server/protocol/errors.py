@@ -34,6 +34,14 @@ class ProtocolError(ServerError):
     public_message = "The request is malformed."
 
 
+class CommunicationIntegrityError(ServerError):
+    """Represent a missing or invalid message integrity digest."""
+
+    status = StatusCode.BAD_REQUEST
+    code = "communication_integrity_error"
+    public_message = "The message failed integrity verification."
+
+
 class HeadersTooLargeError(ProtocolError):
     """Represent headers exceeding the configured limit."""
 
