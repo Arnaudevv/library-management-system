@@ -1,8 +1,8 @@
 from __future__ import annotations
-
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any, Callable
-
+from server.persistance.database import Base
 from .controllers.author_controller import AuthorController
 from .controllers.book_controller import BookController
 from .controllers.borrower_controller import BorrowerController
@@ -46,6 +46,10 @@ class Router:
     def create_default(cls) -> Router:
         """Create the application dependencies and register its routes."""
         factory = UnitOfWorkFactory(DATABASE_URL)
+        db_file = factory.engine.url.database
+        if db_file:
+            Path(db_file).parent.mkdir(parents=True, exist_ok=True)
+        Base.metadata.create_all(factory.engine)
         migrate_loan_due_date(factory.engine)
         authors = AuthorController(AuthorService(factory))
         books = BookController(BookService(factory))

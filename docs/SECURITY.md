@@ -82,6 +82,46 @@ python tools/secure_client.py --path /books
 The secure client verifies the server against `ca.crt.pem`, presents
 `client2.crt.pem`, sends the request digest, and validates the response digest.
 
+## Browser proxy
+
+The optional local proxy lets the browser use the web app without installing
+certificates in Windows or the browser. The proxy presents the existing
+`client1` identity to the mTLS server and forwards the browser's HTTP request
+and response digests unchanged.
+
+```text
+Browser --(plain HTTP, 127.0.0.1 only)--> tools/browser_proxy.py
+        --(HTTPS/mTLS as client1)-------> library server
+```
+
+This is a demo convenience, not a replacement for direct browser mTLS or the
+Python secure client and tests. The browser-to-proxy hop is plain HTTP on
+loopback; only the proxy-to-server hop is TLS-protected. The authenticated
+identity is the proxy's `client1` certificate, not the browser's. This changes
+the earlier design decision that the browser itself is the mTLS client, so
+confirm that this optional arrangement is acceptable to the instructor.
+
+Generate certificates if needed, then run each command in a separate terminal:
+
+```powershell
+python scripts/generate_certs.py
+python run_server.py
+python tools/browser_proxy.py
+```
+
+Open `http://localhost:9000` in the browser. This repository's server entry
+point is `run_server.py`; there is no `server/main.py`.
+
+The proxy binds only to `127.0.0.1`. Its listener port defaults to `9000` and
+can be changed with `--port` or `BROWSER_PROXY_PORT`. The upstream defaults to
+the server's `HOST` and `PORT` settings; `--server-host` and `--server-port`
+or `BROWSER_PROXY_SERVER_HOST` and `BROWSER_PROXY_SERVER_PORT` override them.
+Client paths can be overridden in `.env` with `BROWSER_PROXY_CA_FILE`,
+`BROWSER_PROXY_CLIENT_CERT_FILE`, and `BROWSER_PROXY_CLIENT_KEY_FILE`.
+Relative paths are resolved from the repository root. The proxy verifies each
+upstream response digest and returns a digest-bearing 502 response if
+verification or the upstream connection fails.
+
 ## Configuration
 
 The server uses these environment variables; defaults point to files generated
