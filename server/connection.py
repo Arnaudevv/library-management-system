@@ -93,7 +93,8 @@ async def handle_connection( reader: asyncio.StreamReader, writer: asyncio.Strea
             active_connections -= 1
             print(
                 f"[CONNECTIONS] request_id={request_id} "
-                f"active_connections={active_connections}",
+                f"active_connections={active_connections}"
+                f"\n",
                 flush=True,
             )
 
