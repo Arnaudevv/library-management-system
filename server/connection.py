@@ -127,7 +127,7 @@ async def socket_listener() -> None:
 
     print(
         f"🚀 Secure server is running at https://{HOST}:{PORT}. "
-        "Open this URL in your web browser to connect a client.",
+        "Open this URL (changing te proxy port :8000 -> :9000) in your web browser to connect a client.",
         flush=True,
     )
 
