@@ -1,37 +1,32 @@
 # Library Management System
 
-A small library application for managing books, authors, borrowers, and loans.
-The browser client is built with HTML, CSS, and vanilla JavaScript; the Python
-server provides the API and serves the client from the same origin.
-
-> This README describes the synchronous server version before the asyncio
-> concurrency refactor.
-
-## Features
-
-- Browse, search, create, and delete books, authors, and borrowers.
-- Create loans, view all, active, or returned loans, and return books.
-- View a borrower's loan history.
-
-## Architecture
-
-The synchronous TCP server accepts a connection, reads one HTTP request,
-dispatches it through the router, controllers, services, repositories, and
-SQLAlchemy persistence layer, sends the response, and closes the connection.
-It handles connections sequentially: it finishes one request before handling
-the next. Socket and database operations are synchronous.
+A small web application for managing books, authors, borrowers, and loans.
+The browser client uses plain HTML, CSS, and JavaScript. The Python server
+serves both the web page and its API.
 
 ## Requirements
 
 - Python 3.10 or later
-- Dependencies listed in `requirements.txt`
+- Git
+- No Node.js or frontend build step
 
-The frontend has no separate build step or npm dependencies.
+## Start the app on Windows
 
-## Getting Started
+The recommended browser setup uses the local proxy. You do **not** need to
+install certificates in Windows or the browser.
 
-From the repository root, create and activate a virtual environment, then
-install the dependencies:
+### 1. Clone the repository
+
+In PowerShell:
+
+```powershell
+git clone https://github.com/Arnaudevv/library-management-system.git
+cd library-management-system
+```
+
+If you already cloned the repository, open a terminal at its root folder.
+
+### 2. Create a virtual environment and install dependencies
 
 ```powershell
 py -m venv .venv
@@ -39,49 +34,108 @@ py -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Create a `.env` file in the repository root with:
+In Git Bash, create and activate it with:
+
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+```
+
+### 3. Configure and prepare the database
+
+Create or update a `.env` file in the repository root:
 
 ```dotenv
 DEVELOPEMENT_DB=sqlite
 ```
 
-The environment variable name above matches the spelling currently read by the
-application. This configures the SQLite database at `data/library.db`.
-
-Create the database schema and insert sample data:
+The spelling `DEVELOPEMENT_DB` matches the setting currently read by the
+application. Create the data folder, then create the database schema and
+sample records:
 
 ```powershell
+New-Item -ItemType Directory -Force data | Out-Null
 python -m tests.fill_database
 ```
 
-Start the server:
+In Git Bash, use `mkdir -p data` instead of `New-Item`.
+
+### 4. Generate local development certificates
+
+Run this once for each fresh clone:
+
+```powershell
+python scripts\generate_certs.py
+```
+
+Choose and confirm a password when prompted. The generated `certs/` folder
+contains local development identities and is not included in Git. If it already
+contains certificates, skip this step; the generator does not overwrite them.
+In Git Bash, use `python scripts/generate_certs.py`.
+
+### 5. Start the server and proxy
+
+Keep the server running in one terminal:
 
 ```powershell
 python run_server.py
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in a browser. The server
-serves both the frontend and API; no separate frontend server is needed.
+Open a second terminal at the repository root, activate the same virtual
+environment, and start the proxy:
 
-Run the test suite with:
+```powershell
+python tools\browser_proxy.py
+```
+
+In Git Bash, use `python tools/browser_proxy.py`. Then open
+[http://localhost:9000](http://localhost:9000) in the browser. Use `http` for
+this local address, not `https`.
+
+The proxy allows the browser to reach the mTLS server without importing
+certificates into the PC. It listens only on `127.0.0.1`. Read
+[the security guide](docs/SECURITY.md) for what the proxy changes and its
+limitations.
+
+## Run the tests
+
+With the virtual environment active:
 
 ```powershell
 python -m pytest -q
 ```
 
-## Detailed Documentation
+The optional Python client can also make an authenticated API request:
 
-The `docs/` directory contains the full technical documentation. This README is
-only a quick introduction and setup guide.
+```powershell
+python tools\secure_client.py --path /books
+```
 
-- [HTTP API requests and routes](docs/api_requests.md)
-- [API response formats and examples](docs/api_responses.md)
+## Troubleshooting
+
+- **`unable to open database file`:** make sure `data/` exists, then rerun
+  `python -m tests.fill_database`.
+- **The browser cannot connect:** keep both the server and proxy terminals
+  running, and open `http://localhost:9000`.
+- **`tools/browser_proxy.py` is missing after cloning:** use a commit or branch
+  that contains the proxy.
+
+Press `Ctrl+C` in each terminal to stop the server and proxy.
+
+## Architecture note
+
+The description below is the original synchronous design summary. The current
+server uses asyncio; see [the async server guide](docs/async_server.md).
+
+The original design handled connections sequentially: it read one HTTP request,
+dispatched it through the router, controllers, services, repositories, and
+SQLAlchemy persistence layer, sent the response, and closed the connection.
+
+## More documentation
+
+- [Security setup and browser proxy](docs/SECURITY.md)
+- [HTTP API routes and requests](docs/api_requests.md)
+- [API response formats](docs/api_responses.md)
 - [HTTP protocol and application layers](docs/protocol.md)
 - [HTTP errors and status codes](docs/http_errors_and_statuses.md)
-- [Repository queries and persistence notes](docs/repository_queries.md)
-- [Async server architecture](docs/async_server.md) documents the later
-  concurrency refactor, not the synchronous version described in this README.
-- [Secure communication setup](docs/SECURITY.md) documents the TLS and digest
-  layer for the asyncio server.
-
-password: generate-certs
+- [Repository queries and persistence](docs/repository_queries.md)

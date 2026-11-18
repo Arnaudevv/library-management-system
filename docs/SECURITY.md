@@ -1,159 +1,182 @@
-# Secure Communication
+# Security: TLS, Client Certificates, and Digests
 
-The asyncio server uses mutual TLS (mTLS) and SHA-256 body digests. The existing
-router, controllers, services, repositories, and synchronous SQLAlchemy layer
-are unchanged.
+This project protects communication between a client and the library server.
+It uses TLS, client certificates, and SHA-256 body digests.
 
-## What protects the connection
+## What is protected
 
-Before HTTP is handled, TLS authenticates the server and requires a client
-certificate issued by the project's CA. TLS negotiates ephemeral session keys
-and encrypts traffic with a symmetric cipher. The application does not implement
-its own AES key exchange.
+### TLS and mutual TLS
 
-REST requests must contain `X-Content-Digest`, the lowercase hexadecimal
-SHA-256 of the exact request body bytes. The server verifies it before routing
-the request. Every response, including errors and empty responses, contains the
-same header computed from the exact serialized body bytes.
+TLS encrypts data while it travels between the client and the server. It also
+lets the client check that it is talking to the expected server.
 
-The browser's `http.js` wrapper adds request digests and verifies API response
-digests before parsing JSON. Browser-managed HTML, CSS, and JavaScript requests
-do not pass through that wrapper. They are protected by TLS and receive a digest
-header, but the browser does not verify that custom header.
+This project uses **mutual TLS (mTLS)**: the server also asks the client for a
+certificate. The server accepts certificates signed by the project's
+development CA. A client without a trusted certificate cannot make an HTTPS
+connection to the server.
 
-SHA-256 is an unkeyed integrity check, not encryption or sender authentication.
-TLS provides confidentiality, peer authentication, and transport integrity.
+The certificates are created for local development by
+[`scripts/generate_certs.py`](../scripts/generate_certs.py). The script creates
+a CA, a server identity, two trusted client identities, and an untrusted
+identity for rejection tests. It asks you to choose a password for the CA key
+and `.p12` files. Keep the generated `certs/` folder local; do not commit or
+share private keys.
 
-## Generate development certificates
+TLS handles encryption. The application does not implement its own AES
+encryption or key exchange.
 
-Install the project's Python dependencies and run this command from the
-repository root:
+### SHA-256 body digests
 
-```powershell
-python scripts/generate_certs.py
-```
+For REST requests, the client sends an `X-Content-Digest` header containing the
+SHA-256 digest of the exact request body. The server checks it before routing
+the request. Every server response also includes a digest, and the browser's
+[`http.js`](../client/js/api/http.js) checks API response digests before
+parsing JSON.
 
-The script asks for a password and creates a local `certs/` directory containing:
+A digest is not encryption or a digital signature. TLS provides the protected
+connection; the digest is an additional check that the body received by the
+application matches the body that was sent.
 
-- A development CA and its encrypted private key.
-- A server certificate and private key for `localhost` and `127.0.0.1`.
-- Two CA-signed client identities and password-protected `.p12` files.
-- A client signed by an untrusted CA for rejection tests.
+Browser-managed requests for HTML, CSS, JavaScript, and other static files do
+not pass through `http.js`, so the browser cannot add a request digest to them.
+The server exempts those static requests from the request-digest requirement.
+Static responses still have a digest.
 
-For access from another device, include the server's DNS name or LAN IP when
-generating certificates, for example:
+## Why the browser proxy exists
 
-```powershell
-python scripts/generate_certs.py --server-name 192.168.1.20
-```
+With direct mTLS, the browser must have a trusted CA certificate and a client
+certificate installed in its certificate store. That is inconvenient or
+blocked on managed university computers. Browser JavaScript cannot load a
+private key from the project folder and attach it to the TLS handshake.
 
-The host must also be reachable on the network. Set `HOST=0.0.0.0` in `.env`
-when the server should listen on all network interfaces. Use the same DNS name
-or IP in the browser URL that was included in the server certificate.
-
-All private keys and `.p12` files are local development credentials and are
-ignored by Git. Never commit or publicly share them. Keep `ca.key.pem` only with
-the CA operator; clients need the CA certificate, not the CA private key.
-
-## Configure the browser
-
-On the machine running the browser:
-
-1. Import `certs/ca.crt.pem` into the operating system or browser's trusted root
-   certificate store. This lets the browser verify the server certificate.
-2. Import `certs/client1.p12` into the personal/client certificate store using
-   the password entered during generation.
-3. Start the server with `python run_server.py`.
-4. Open `https://localhost:8000` (or the configured server name/IP). Select the
-   client certificate if the browser prompts.
-
-Chrome and Edge on Windows use the Windows certificate store. Firefox may use
-its own certificate store depending on its settings. A browser without a
-trusted client certificate is rejected during the TLS handshake, before any
-HTTP request reaches the application.
-
-For a second client without browser certificate-store setup, use the generated
-`client2` PEM files with the Python demonstration client:
-
-```powershell
-python tools/secure_client.py --path /books
-```
-
-The secure client verifies the server against `ca.crt.pem`, presents
-`client2.crt.pem`, sends the request digest, and validates the response digest.
-
-## Browser proxy
-
-The optional local proxy lets the browser use the web app without installing
-certificates in Windows or the browser. The proxy presents the existing
-`client1` identity to the mTLS server and forwards the browser's HTTP request
-and response digests unchanged.
+The optional [`tools/browser_proxy.py`](../tools/browser_proxy.py) avoids that
+installation step. The browser connects to a local proxy, and the proxy uses
+the project's `client1` certificate to connect to the server:
 
 ```text
-Browser --(plain HTTP, 127.0.0.1 only)--> tools/browser_proxy.py
-        --(HTTPS/mTLS as client1)-------> library server
+Browser --(HTTP on 127.0.0.1)--> Local proxy
+        --(HTTPS with mTLS)----> Library server
 ```
 
-This is a demo convenience, not a replacement for direct browser mTLS or the
-Python secure client and tests. The browser-to-proxy hop is plain HTTP on
-loopback; only the proxy-to-server hop is TLS-protected. The authenticated
-identity is the proxy's `client1` certificate, not the browser's. This changes
-the earlier design decision that the browser itself is the mTLS client, so
-confirm that this optional arrangement is acceptable to the instructor.
+The proxy forwards the browser's request and response digest headers without
+recalculating them. It also checks every response digest from the server. A
+bad or missing digest produces a `502` response.
 
-Generate certificates if needed, then run each command in a separate terminal:
+### Important proxy limitation
+
+The browser-to-proxy connection is plain HTTP, limited to this computer's
+loopback address. Only the proxy-to-server connection is protected by TLS.
+The server authenticates the proxy's `client1` certificate, not the browser
+or the person using it. Other local software on the same computer may be able
+to connect to the proxy.
+
+This proxy is an optional development and demonstration convenience. It does
+not replace direct browser mTLS, the Python client, or the security tests. It
+also changes the original design in which the browser itself was the mTLS
+client, so check that this option is acceptable for the assignment.
+
+## Start the application with the proxy
+
+The following steps use PowerShell on Windows. Run commands from the repository
+root. The server entry point in this repository is `run_server.py`.
+
+1. Create and activate a virtual environment, then install dependencies:
+
+   ```powershell
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install -r requirements.txt
+   ```
+
+   In Git Bash, activate the environment with:
+
+   ```bash
+   python -m venv .venv
+   source .venv/Scripts/activate
+   ```
+
+2. Make sure a root-level `.env` file contains:
+
+   ```dotenv
+   DEVELOPEMENT_DB=sqlite
+   ```
+
+   The spelling `DEVELOPEMENT_DB` is the name the current application reads.
+
+3. Create the SQLite data folder and load the sample data:
+
+   ```powershell
+   New-Item -ItemType Directory -Force data | Out-Null
+   python -m tests.fill_database
+   ```
+
+   The folder is needed before the seed command opens `data/library.db`.
+
+4. Generate development certificates once on this computer:
+
+   ```powershell
+   python scripts\generate_certs.py
+   ```
+
+   Choose and confirm a password when prompted. If the local `certs/` folder
+   already contains generated certificates, skip this step. No certificate
+   needs to be installed in Windows or the browser when using the proxy. In
+   Git Bash, use `python scripts/generate_certs.py`.
+
+5. Start the server in one terminal:
+
+   ```powershell
+   python run_server.py
+   ```
+
+6. Start the proxy in a second terminal, from the repository root:
+
+   ```powershell
+   python tools\browser_proxy.py
+   ```
+
+7. Open **http://localhost:9000** in the browser. Use `http`, not `https`, for
+   the local proxy address.
+
+In Git Bash, use forward slashes in the script commands, for example
+`python tools/browser_proxy.py`.
+
+## Other ways to test the security layer
+
+The Python demo client uses `client2` directly and does not need a browser
+certificate store:
 
 ```powershell
-python scripts/generate_certs.py
-python run_server.py
-python tools/browser_proxy.py
+python tools\secure_client.py --path /books
 ```
 
-Open `http://localhost:9000` in the browser. This repository's server entry
-point is `run_server.py`; there is no `server/main.py`.
-
-The proxy binds only to `127.0.0.1`. Its listener port defaults to `9000` and
-can be changed with `--port` or `BROWSER_PROXY_PORT`. The upstream defaults to
-the server's `HOST` and `PORT` settings; `--server-host` and `--server-port`
-or `BROWSER_PROXY_SERVER_HOST` and `BROWSER_PROXY_SERVER_PORT` override them.
-Client paths can be overridden in `.env` with `BROWSER_PROXY_CA_FILE`,
-`BROWSER_PROXY_CLIENT_CERT_FILE`, and `BROWSER_PROXY_CLIENT_KEY_FILE`.
-Relative paths are resolved from the repository root. The proxy verifies each
-upstream response digest and returns a digest-bearing 502 response if
-verification or the upstream connection fails.
-
-## Configuration
-
-The server uses these environment variables; defaults point to files generated
-in the repository's `certs/` directory:
-
-| Variable | Default |
-|---|---|
-| `HOST` | `127.0.0.1` |
-| `PORT` | `8000` |
-| `TLS_SERVER_CERT_FILE` | `certs/server.crt.pem` |
-| `TLS_SERVER_KEY_FILE` | `certs/server.key.pem` |
-| `TLS_CLIENT_CA_FILE` | `certs/ca.crt.pem` |
-
-Relative certificate paths are resolved from the repository root. The server
-requires TLS 1.2 or newer and validates client certificates against only the
-configured CA. Do not use `ssl._create_unverified_context()` or disable
-certificate verification.
-
-## Verification and limitations
-
-Run all tests with:
+Run the automated security and application tests with:
 
 ```powershell
 python -m pytest -q
 ```
 
-Tests generate temporary certificates and cover trusted and rejected clients,
-TLS negotiation, request/response digests, and concurrent connections. No
-private test keys are stored in the repository.
+Tests create temporary certificates. They check trusted and rejected clients,
+TLS negotiation, request and response digests, the browser proxy, and concurrent
+requests.
 
-The digest requirement is applied to REST API requests and responses. Requests
-for browser-managed static assets are exempt from the request digest because
-the browser cannot add a body digest through the application's `fetch` wrapper.
-Static responses still travel over authenticated TLS and include a digest
-header, but the browser does not independently verify it.
+## Configuration and troubleshooting
+
+The server uses `HOST` and `PORT` from `.env`, defaulting to `127.0.0.1` and
+`8000`. The proxy always listens on `127.0.0.1`; its port defaults to `9000`
+and can be changed with `BROWSER_PROXY_PORT` or `--port`. It uses the server
+host and port by default. `BROWSER_PROXY_SERVER_HOST` and
+`BROWSER_PROXY_SERVER_PORT` can override the upstream address.
+
+The proxy's CA, client certificate, and key default to
+`certs/ca.crt.pem`, `certs/client1.crt.pem`, and `certs/client1.key.pem`.
+Override them with `BROWSER_PROXY_CA_FILE`,
+`BROWSER_PROXY_CLIENT_CERT_FILE`, and `BROWSER_PROXY_CLIENT_KEY_FILE` if
+needed. Relative paths are resolved from the repository root.
+
+- If SQLite reports `unable to open database file`, create `data/` and rerun
+  `python -m tests.fill_database`.
+- If the browser cannot connect, check that both the server and proxy are
+  running, then open `http://localhost:9000`.
+- Do not use `ssl._create_unverified_context()` or disable TLS certificate
+  verification.
